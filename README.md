@@ -1,73 +1,110 @@
-# Welcome to your Lovable project
+# 🥙 FoodExpress – Full Stack Online Food Ordering System
 
-## Project info
+## 🎓 Final Year Project Submission (React + Flask + MySQL)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+FoodExpress is a premium, full-stack food delivery platform designed for high-end user experiences. It features a triple-role architecture (User, Restaurant, Admin, Delivery) with real-time tracking and secure payment integration.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🏛️ Project Architecture
 
-**Use Lovable**
+The platform follows a standard **Full-Stack SaaS Architecture**:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Frontend**: React 18 with TypeScript, Tailwind CSS, and Framer Motion for premium animations.
+- **Backend**: Python Flask RESTful API.
+- **Database**: MySQL (Relational Schema for Orders, Users, & Restaurants).
+- **Payments**: Razorpay Gateway Integration.
+- **Geolocation**: OpenStreetMap (Nominatim) for precision delivery tracking.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🔥 Key Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 1. 🍱 Multi-Role Dashboards
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **User Dashboard**: Order history, active tracking, and profile management.
+- **Restaurant Interface**: Kitchen manager for preparing orders and menu control.
+- **Admin Command Center**: Real-time sales analytics, revenue tracking, and partner verification.
+- **Delivery Hub**: Live logistics tracking and trip management.
 
-Follow these steps:
+### 2. 💳 Premium Checkout & Payments
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **Razorpay Integration**: Supports UPI, NetBanking, and Credit/Debit cards.
+- **Dynamic Cart**: Real-time total calculation with automatic tax/delivery fee logic.
+- **Secure Sessions**: JWT-based authentication for all private routes.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. 🗺️ Location & Logistics
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Precision Geocoding**: Automatic address detection even behind HTTP/Insecure contexts.
+- **Interactive Maps**: Leaflet-based pin placement for delivery accuracy.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+---
+
+## 📊 Database Schema (MySQL)
+
+### `users` Table
+
+| Column        | Type     | Description                       |
+| :------------ | :------- | :-------------------------------- |
+| `id`          | INT (PK) | Unique User Identifier            |
+| `username`    | VARCHAR  | Required for login                |
+| `role`        | ENUM     | admin, restaurant, delivery, user |
+| `is_approved` | BOOLEAN  | Verification for partners         |
+
+### `orders` Table
+
+| Column         | Type     | Description                   |
+| :------------- | :------- | :---------------------------- |
+| `id`           | INT (PK) | Transaction ID                |
+| `total_amount` | DECIMAL  | Grand total with taxes        |
+| `payment_id`   | VARCHAR  | Razorpay Payment Reference    |
+| `status`       | VARCHAR  | pending, preparing, delivered |
+
+---
+
+## 🚀 Installation & Setup
+
+### 1. Backend Setup (Flask)
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+### 2. Frontend Setup (Vite)
+
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 3. Environment Config
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` in the `frontend` folder:
 
-**Use GitHub Codespaces**
+```env
+VITE_API_BASE_URL="http://127.0.0.1:5000"
+VITE_RAZORPAY_KEY="rzp_test_xxxxxxx"
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🎨 Design Philosophy: "Jet Black & Honey Tan"
 
-This project is built with:
+The UI is built on a **Luxury Dark Theme** using:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Primary**: `#c9a84c` (Honey Tan / Gold)
+- **Background**: `#0d0d0d` (Pure Black)
+- **Interactions**: Subtle glassmorphism and spring-based animations.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 📜 Project Report Content (For Viva)
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Problem Statement**: Bridging the gap between high-end Arabic cuisine and fast delivery logistics.
+- **Solution**: A centralized platform with separate logic for kitchen and courier, integrated with a secure transaction layer.
+- **Conclusion**: Successfully implemented a scalable ordering system capable of handling concurrent transactions and real-time logistics.

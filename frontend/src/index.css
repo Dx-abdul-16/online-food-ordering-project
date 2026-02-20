@@ -1,0 +1,284 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* ── Dark luxury theme – matches FoodExpress / Street Arabiya ── */
+    --background: 0 0% 5%;           /* #0d0d0d */
+    --foreground: 0 0% 95%;          /* near white */
+
+    --card: 0 0% 8%;                 /* #141414 */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 9%;              /* #171717 */
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 38 53% 55%;           /* #c9a84c – gold */
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 24 95% 55%;         /* #fc8019 – swiggy orange */
+    --secondary-foreground: 0 0% 5%;
+
+    --muted: 0 0% 13%;               /* #222 */
+    --muted-foreground: 0 0% 55%;    /* mid-grey text */
+
+    --accent: 353 73% 55%;           /* #e23744 – zomato red */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 16%;              /* #292929 */
+    --input: 0 0% 13%;               /* #222 */
+    --ring: 38 53% 55%;              /* gold ring */
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 38 53% 55%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 24 95% 55%;
+    --sidebar-accent-foreground: 0 0% 5%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 38 53% 55%;
+
+    --chart-1: 38 53% 55%;
+    --chart-2: 24 95% 55%;
+    --chart-3: 353 73% 55%;
+    --chart-4: 142 60% 50%;
+    --chart-5: 270 60% 60%;
+
+    --sidebar: 0 0% 5%;
+
+    --font-sans:
+      "Nunito", "Inter", ui-sans-serif, system-ui, -apple-system,
+      BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      "Noto Sans", sans-serif;
+    --font-serif:
+      "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman",
+      Times, serif;
+    --font-mono:
+      "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Courier New", monospace;
+
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.3);
+    --shadow-xs:  0 1px 3px 0px hsl(0 0% 0% / 0.3);
+    --shadow-sm:  0 1px 3px 0px hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+    --shadow:     0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
+    --shadow-md:  0 4px 6px -1px hsl(0 0% 0% / 0.5), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg:  0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
+    --shadow-xl:  0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.7);
+
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
+
+    --success: 142 60% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 53% 55%;
+    --warning-foreground: 0 0% 5%;
+    --info: 200 80% 55%;
+    --info-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 20 25% 10%;
+    --foreground: 30 50% 98%;
+
+    --card: 20 20% 14%;
+    --card-foreground: 30 50% 98%;
+
+    --popover: 20 20% 14%;
+    --popover-foreground: 30 50% 98%;
+
+    --primary: 24 95% 58%;
+    --primary-foreground: 20 25% 10%;
+
+    --secondary: 45 80% 55%;
+    --secondary-foreground: 20 25% 10%;
+
+    --muted: 20 15% 25%;
+    --muted-foreground: 30 20% 70%;
+
+    --accent: 142 60% 50%;
+    --accent-foreground: 20 25% 10%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 20 15% 25%;
+    --input: 20 15% 25%;
+    --ring: 24 95% 58%;
+
+    --sidebar-background: 20 25% 8%;
+    --sidebar-foreground: 30 50% 98%;
+    --sidebar-primary: 24 95% 58%;
+    --sidebar-primary-foreground: 20 25% 10%;
+    --sidebar-accent: 45 80% 55%;
+    --sidebar-accent-foreground: 20 25% 10%;
+    --sidebar-border: 20 15% 20%;
+    --sidebar-ring: 24 95% 58%;
+
+    --chart-1: 24 95% 58%;
+    --chart-2: 45 80% 55%;
+    --chart-3: 142 60% 50%;
+    --chart-4: 0 70% 55%;
+    --chart-5: 270 60% 60%;
+
+    --sidebar: 20 20% 14%;
+
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.1);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.1);
+    --shadow-sm:
+      0 1px 3px 0px hsl(0 0% 0% / 0.2), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
+    --shadow:
+      0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-md:
+      0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg:
+      0 10px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+    --shadow-xl:
+      0 20px 25px -5px hsl(0 0% 0% / 0.2), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.4);
+
+    --success: 142 60% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 80% 55%;
+    --warning-foreground: 20 25% 10%;
+    --info: 200 80% 55%;
+    --info-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Nunito', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background-color: #0d0d0d;
+    color: #ffffff;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Nunito', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 900;
+  }
+}
+
+/* ─── Custom Animations ─── */
+@keyframes spin-slow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(155px) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(155px) rotate(-360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c9a84c;
+}
+
+/* ─── Hide scrollbar utility ─── */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Leaflet Map Fixes ─── */
+.leaflet-container {
+  background: #1a1a1a !important;
+  font-family: 'Nunito', 'Inter', sans-serif !important;
+  z-index: 0 !important;
+}
+
+.leaflet-tile-pane {
+  opacity: 1 !important;
+}
+
+/* Fix tile loading on mobile */
+.leaflet-tile {
+  image-rendering: auto;
+}
+
+/* Fix popup z-index clashing with header */
+.leaflet-popup {
+  z-index: 700;
+}
+
+.leaflet-control-zoom a {
+  background-color: #1e1e1e !important;
+  color: #c9a84c !important;
+  border-color: #2a2a2a !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #2a2a2a !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(0,0,0,0.6) !important;
+  color: #666 !important;
+  font-size: 9px !important;
+}
+
+.leaflet-control-attribution a {
+  color: #888 !important;
+}
