@@ -1,9 +1,15 @@
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def get_db():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="638638",     
-        database="food_ordering"
+        host=os.getenv("MYSQLHOST", "localhost"),
+        user=os.getenv("MYSQLUSER", "root"),
+        password=os.getenv("MYSQLPASSWORD", "638638"),     
+        database=os.getenv("MYSQLDATABASE", "food_ordering"),
+        port=int(os.getenv("MYSQLPORT", 3306))
     )
