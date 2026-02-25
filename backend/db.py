@@ -1,10 +1,11 @@
 import mysql.connector
 import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # In production (e.g. Railway), environment variables are injected automatically
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("MYSQLHOST", "localhost"),
