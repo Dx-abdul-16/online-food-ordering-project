@@ -7,10 +7,10 @@ import { api } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 
 const fallbackItems = [
-  { id: "f1", name: "Chicken Shawarma", price: 149, restaurantId: 1, restaurantName: "Street Arabiya", emoji: "🥙", rating: 4.8 },
-  { id: "f2", name: "Chicken Mandi", price: 349, restaurantId: 1, restaurantName: "Arabian Nights", emoji: "🍗", rating: 4.7 },
-  { id: "f3", name: "Afghani Alfaham", price: 399, restaurantId: 2, restaurantName: "Al Bait", emoji: "🔥", rating: 4.9 },
-  { id: "f4", name: "Mutton Biryani", price: 279, restaurantId: 3, restaurantName: "Biriyani House", emoji: "🍚", rating: 4.6 },
+  { id: "f1", name: "Chicken Shawarma", price: 149, restaurantId: 1, restaurantName: "Street Arabiya", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=300&h=300&fit=crop", rating: 4.8 },
+  { id: "f2", name: "Chicken Mandi", price: 349, restaurantId: 1, restaurantName: "Arabian Nights", image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&h=300&fit=crop", rating: 4.7 },
+  { id: "f3", name: "Afghani Alfaham", price: 399, restaurantId: 2, restaurantName: "Al Bait", image: "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=300&h=300&fit=crop", rating: 4.9 },
+  { id: "f4", name: "Mutton Biryani", price: 279, restaurantId: 3, restaurantName: "Biriyani House", image: "https://images.unsplash.com/photo-1633321702518-7feccafb94d5?w=300&h=300&fit=crop", rating: 4.6 },
 ];
 
 const RecommendedFood = () => {

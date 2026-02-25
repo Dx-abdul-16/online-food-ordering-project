@@ -37,5 +37,16 @@ app.register_blueprint(delivery_bp,   url_prefix="/api/delivery")
 def home():
     return {"status": "FoodExpress Backend running ✓"}
 
+@app.route("/debug")
+def debug_route():
+    try:
+        from db import get_db
+        conn = get_db()
+        cur = conn.cursor(dictionary=True)
+        cur.execute("SELECT id FROM users")
+        res = cur.fetchall()
+        return {"users": res}
+    except Exception as e:
+        return {"error": str(e)}
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

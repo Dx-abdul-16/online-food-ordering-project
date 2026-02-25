@@ -5,37 +5,33 @@ restaurant_bp = Blueprint("restaurant", __name__)
 
 @restaurant_bp.route("/", methods=["GET"])
 def get_restaurants():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    
-    
-    
-    cursor.execute("SELECT * FROM restaurants") 
-    
-    restaurants = cursor.fetchall()
-    
-   
-    formatted_restaurants = []
-    for r in restaurants:
-        formatted_restaurants.append({
-            "id": r["id"],
-            "name": r["name"],
-            "image": r["image"],
-            "cuisine": r["cuisine"],
-            "rating": r["rating"],
-            "deliveryTime": r["delivery_time"],
-            "location": r["location"],
-            "latitude": r.get("latitude"),
-            "longitude": r.get("longitude"),
-            "priceForTwo": r["price_for_two"],
-            "offer": r["offer"],
-            "isVeg": bool(r["is_veg"])
-        })
-    
-    cursor.close()
-    db.close()
-    
-    return jsonify(formatted_restaurants)
+    try:
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM restaurants")
+        restaurants = cursor.fetchall()
+
+        formatted_restaurants = []
+        for r in restaurants:
+            formatted_restaurants.append({
+                "id": r.get("id"),
+                "name": r.get("name"),
+                "image": r.get("image"),
+                "cuisine": r.get("cuisine"),
+                "rating": r.get("rating"),
+                "deliveryTime": r.get("delivery_time"),
+                "location": r.get("location"),
+                "latitude": r.get("latitude"),
+                "longitude": r.get("longitude"),
+                "priceForTwo": r.get("price_for_two"),
+                "isVeg": bool(r.get("is_veg", False))
+            })
+
+        cursor.close()
+        db.close()
+        return jsonify(formatted_restaurants)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @restaurant_bp.route("/<int:id>", methods=["GET"])
 def get_restaurant(id):
@@ -76,7 +72,6 @@ def get_restaurant(id):
         "latitude": restaurant.get("latitude"),
         "longitude": restaurant.get("longitude"),
         "priceForTwo": restaurant["price_for_two"],
-        "offer": restaurant["offer"],
         "isVeg": bool(restaurant["is_veg"]),
         "menu": formatted_menu
     }

@@ -37,7 +37,7 @@ export interface Restaurant {
   price_for_two?: number;
   is_veg?: boolean;
   isVeg?: boolean;
-  offer?: string;
+
   tags?: string[];
   menu?: MenuItem[];
 }

@@ -13,33 +13,33 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* ── Dark luxury theme – matches FoodExpress / Street Arabiya ── */
-    --background: 0 0% 5%;           /* #0d0d0d */
-    --foreground: 0 0% 95%;          /* near white */
+    --background: 0 0% 5%; /* #0d0d0d */
+    --foreground: 0 0% 95%; /* near white */
 
-    --card: 0 0% 8%;                 /* #141414 */
+    --card: 0 0% 8%; /* #141414 */
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 9%;              /* #171717 */
+    --popover: 0 0% 9%; /* #171717 */
     --popover-foreground: 0 0% 95%;
 
-    --primary: 38 53% 55%;           /* #c9a84c – gold */
+    --primary: 38 53% 55%; /* #c9a84c – gold */
     --primary-foreground: 0 0% 5%;
 
-    --secondary: 24 95% 55%;         /* #fc8019 – swiggy orange */
+    --secondary: 24 95% 55%; /* #fc8019 – swiggy orange */
     --secondary-foreground: 0 0% 5%;
 
-    --muted: 0 0% 13%;               /* #222 */
-    --muted-foreground: 0 0% 55%;    /* mid-grey text */
+    --muted: 0 0% 13%; /* #222 */
+    --muted-foreground: 0 0% 55%; /* mid-grey text */
 
-    --accent: 353 73% 55%;           /* #e23744 – zomato red */
+    --accent: 353 73% 55%; /* #e23744 – zomato red */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 16%;              /* #292929 */
-    --input: 0 0% 13%;               /* #222 */
-    --ring: 38 53% 55%;              /* gold ring */
+    --border: 0 0% 16%; /* #292929 */
+    --input: 0 0% 13%; /* #222 */
+    --ring: 38 53% 55%; /* gold ring */
 
     --radius: 0.75rem;
 
@@ -65,19 +65,24 @@ All colors MUST be HSL.
       BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
       "Noto Sans", sans-serif;
     --font-serif:
-      "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman",
-      Times, serif;
+      "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times,
+      serif;
     --font-mono:
       "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Courier New", monospace;
 
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.3);
-    --shadow-xs:  0 1px 3px 0px hsl(0 0% 0% / 0.3);
-    --shadow-sm:  0 1px 3px 0px hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
-    --shadow:     0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
-    --shadow-md:  0 4px 6px -1px hsl(0 0% 0% / 0.5), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
-    --shadow-lg:  0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
-    --shadow-xl:  0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.3);
+    --shadow-sm:
+      0 1px 3px 0px hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.4);
+    --shadow:
+      0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
+    --shadow-md:
+      0 4px 6px -1px hsl(0 0% 0% / 0.5), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg:
+      0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.4);
+    --shadow-xl:
+      0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
     --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.7);
 
     --tracking-normal: 0em;
@@ -167,13 +172,18 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Nunito', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: "Nunito", "Inter", ui-sans-serif, system-ui, sans-serif;
     background-color: #0d0d0d;
     color: #ffffff;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Nunito', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Nunito", "Inter", ui-sans-serif, system-ui, sans-serif;
     font-weight: 900;
   }
 }
@@ -184,23 +194,39 @@ All colors MUST be HSL.
     transform: translate(-50%, -50%) rotate(0deg) translateX(155px) rotate(0deg);
   }
   to {
-    transform: translate(-50%, -50%) rotate(360deg) translateX(155px) rotate(-360deg);
+    transform: translate(-50%, -50%) rotate(360deg) translateX(155px)
+      rotate(-360deg);
   }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-fade-up {
@@ -245,7 +271,7 @@ All colors MUST be HSL.
 /* ─── Leaflet Map Fixes ─── */
 .leaflet-container {
   background: #1a1a1a !important;
-  font-family: 'Nunito', 'Inter', sans-serif !important;
+  font-family: "Nunito", "Inter", sans-serif !important;
   z-index: 0 !important;
 }
 
@@ -274,11 +300,183 @@ All colors MUST be HSL.
 }
 
 .leaflet-control-attribution {
-  background: rgba(0,0,0,0.6) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
   color: #666 !important;
   font-size: 9px !important;
 }
 
 .leaflet-control-attribution a {
   color: #888 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*                        LIGHT MODE OVERRIDES                                */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Smooth transition on theme switch */
+html,
+body,
+header,
+footer,
+main,
+section,
+div,
+nav,
+aside {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.light-mode {
+  --background: 0 0% 97%;
+  --foreground: 0 0% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --muted: 0 0% 93%;
+  --muted-foreground: 0 0% 40%;
+  --border: 0 0% 88%;
+  --input: 0 0% 93%;
+  --primary: 38 53% 48%;
+  --primary-foreground: 0 0% 100%;
+}
+
+/* ── Body & background overrides ── */
+.light-mode body {
+  background-color: #f5f5f5 !important;
+  color: #1a1a1a !important;
+}
+
+/* ── Major background recolors ── */
+.light-mode .bg-\[\#0d0d0d\],
+.light-mode .bg-\[\#0a0a0a\] {
+  background-color: #f5f5f5 !important;
+}
+
+.light-mode .bg-\[\#111111\],
+.light-mode .bg-\[\#111\] {
+  background-color: #ffffff !important;
+}
+
+.light-mode .bg-\[\#141414\] {
+  background-color: #ffffff !important;
+}
+
+.light-mode .bg-\[\#1a1a1a\] {
+  background-color: #f0f0f0 !important;
+}
+
+.light-mode .bg-\[\#080808\] {
+  background-color: #f8f8f8 !important;
+}
+
+/* ── Borders ── */
+.light-mode .border-\[\#2a2a2a\],
+.light-mode .border-\[\#1e1e1e\],
+.light-mode .border-\[\#333\] {
+  border-color: #e0e0e0 !important;
+}
+
+/* ── Text ── */
+.light-mode .text-white {
+  color: #1a1a1a !important;
+}
+
+.light-mode .text-gray-400 {
+  color: #666666 !important;
+}
+
+.light-mode .text-gray-500 {
+  color: #777777 !important;
+}
+
+.light-mode .text-gray-600 {
+  color: #888888 !important;
+}
+
+.light-mode .text-gray-300 {
+  color: #555555 !important;
+}
+
+/* Keep gold accent vivid */
+.light-mode .text-\[\#c9a84c\] {
+  color: #9e7c1f !important;
+}
+
+.light-mode .bg-\[\#c9a84c\] {
+  background-color: #b8943d !important;
+}
+
+/* ── Gradients ── */
+.light-mode .from-\[\#0d0d0d\],
+.light-mode .via-\[\#0d0d0d\] {
+  --tw-gradient-from: #f5f5f5 !important;
+  --tw-gradient-via: #f5f5f5 !important;
+}
+
+/* ── Header & promo bar ── */
+.light-mode .bg-\[\#0d0d0d\]\/98,
+.light-mode .bg-\[\#0d0d0d\]\/95 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+}
+
+.light-mode
+  .bg-gradient-to-r.from-\[\#c9a84c\].via-\[\#f0c060\].to-\[\#c9a84c\] {
+  color: #1a1a1a !important;
+}
+
+/* ── Cards on hover ── */
+.light-mode .hover\:shadow-2xl:hover {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-mode .hover\:shadow-black\/60:hover,
+.light-mode .hover\:shadow-black\/40:hover,
+.light-mode .hover\:shadow-black\/50:hover {
+  --tw-shadow-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Scrollbar in light mode ── */
+.light-mode ::-webkit-scrollbar-track {
+  background: #f0f0f0 !important;
+}
+
+.light-mode ::-webkit-scrollbar-thumb {
+  background: #ccc !important;
+}
+
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: #9e7c1f !important;
+}
+
+/* ── Leaflet in light mode ── */
+.light-mode .leaflet-container {
+  background: #f0f0f0 !important;
+}
+
+.light-mode .leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  color: #9e7c1f !important;
+  border-color: #ddd !important;
+}
+
+.light-mode .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #999 !important;
+}
+
+/* ── Backdrop blur fix ── */
+.light-mode .bg-black\/80,
+.light-mode .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ── Skeleton animation ── */
+.light-mode .animate-shimmer {
+  background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%) !important;
+  background-size: 200% 100%;
 }

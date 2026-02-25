@@ -32,9 +32,6 @@ const SkeletonCard = () => (
 
 // ── Restaurant card ───────────────────────────────────────────────────────────
 const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
-  const offerColors = ["from-[#e23744] to-[#b02030]", "from-[#fc8019] to-[#c05c00]", "from-[#c9a84c] to-[#8b6914]"];
-  const colorClass = offerColors[restaurant.id % offerColors.length];
-
   return (
     <Link to={`/restaurant/${restaurant.id}`} className="group block">
       <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] overflow-hidden hover:border-[#c9a84c]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/60">
@@ -52,12 +49,7 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
           {/* Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-          {/* Offer badge */}
-          {restaurant.offer && (
-            <div className={`absolute top-3 left-3 bg-gradient-to-r ${colorClass} text-white text-xs font-black px-2.5 py-1 rounded-full`}>
-              🔥 {restaurant.offer}
-            </div>
-          )}
+
 
           {/* Veg badge */}
           {restaurant.isVeg && (
@@ -88,7 +80,7 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
             <span className="text-[#2a2a2a]">•</span>
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3 text-[#c9a84c]" />
-              {restaurant.location || "Coimbatore"}
+              {restaurant.location || "Saravanampatti, Coimbatore"}
             </span>
             {restaurant.minOrder && (
               <>
@@ -194,7 +186,7 @@ const Restaurants = () => {
         <div className="container">
           <div className="mb-1 flex items-center gap-3">
             <div className="h-px w-6 bg-[#c9a84c]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-[#c9a84c]">Coimbatore</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#c9a84c]">Saravanampatti, Coimbatore</span>
           </div>
           <h1 className="font-black text-3xl text-white md:text-4xl">
             All <span className="text-[#c9a84c]">Restaurants</span>

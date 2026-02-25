@@ -27,7 +27,7 @@ const PartnerSection = () => (
           </div>
           <h3 className="font-black text-xl text-white mb-2">Partner with us</h3>
           <p className="text-sm text-gray-500 leading-relaxed mb-5">
-            List your restaurant on FoodExpress and reach thousands of hungry customers in Coimbatore.
+            List your restaurant on FoodExpress and reach thousands of hungry customers in Saravanampatti, Coimbatore.
             Increase your orders and grow your business digitally.
           </p>
           <ul className="space-y-2 mb-6">
@@ -38,7 +38,7 @@ const PartnerSection = () => (
               </li>
             ))}
           </ul>
-          <Link to="/hotel/register">
+          <Link to="/register?role=hotel">
             <Button className="w-full bg-[#fc8019] hover:bg-[#e07010] text-white font-bold rounded-xl gap-2">
               Register Restaurant <ChevronRight className="h-4 w-4" />
             </Button>
@@ -64,7 +64,7 @@ const PartnerSection = () => (
               </li>
             ))}
           </ul>
-          <Link to="/delivery/register">
+          <Link to="/register?role=delivery">
             <Button className="w-full bg-[#c9a84c] hover:bg-[#b8943d] text-black font-bold rounded-xl gap-2">
               Become Delivery Partner <ChevronRight className="h-4 w-4" />
             </Button>

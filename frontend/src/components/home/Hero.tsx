@@ -13,8 +13,15 @@ const slides = [
     ctaLink: "/restaurants",
     bg: "from-[#0d0a04] via-[#1a1105] to-[#0d0a04]",
     accent: "#c9a84c",
-    emoji: "🫙",
-    foodEmojis: ["🥙", "🍖", "🫕", "🥗", "🫔", "🍗"],
+    image: "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=400&h=400&fit=crop",
+    foodImages: [
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1633321702518-7feccafb94d5?w=150&h=150&fit=crop",
+    ],
     tag: "🕌 Authentic Arabic",
   },
   {
@@ -26,8 +33,15 @@ const slides = [
     ctaLink: "/restaurants",
     bg: "from-[#0d0004] via-[#1a0808] to-[#0d0004]",
     accent: "#e23744",
-    emoji: "🍗",
-    foodEmojis: ["🍗", "🍚", "🌿", "🧅", "🫙", "🌶️"],
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=400&fit=crop",
+    foodImages: [
+      "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1544025162-8350b551d7a8?w=150&h=150&fit=crop",
+    ],
     tag: "🔥 Best Seller",
   },
   {
@@ -39,8 +53,15 @@ const slides = [
     ctaLink: "/restaurants",
     bg: "from-[#040a0d] via-[#081520] to-[#040a0d]",
     accent: "#fc8019",
-    emoji: "🌯",
-    foodEmojis: ["🌯", "🥙", "🧄", "🥒", "🍋", "🌶️"],
+    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=400&fit=crop",
+    foodImages: [
+      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=150&h=150&fit=crop",
+      "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=150&h=150&fit=crop",
+    ],
     tag: "⚡ 30 min delivery",
   },
 ];
@@ -186,43 +207,37 @@ const Hero = () => {
             className={`hidden lg:flex items-center justify-center transition-all duration-500 ${animating ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
           >
             <div className="relative w-full max-w-[420px] aspect-square">
-              {/* Central big emoji */}
+              {/* Central big image */}
               <div
-                className="absolute inset-0 flex items-center justify-center rounded-2xl border"
+                className="absolute inset-0 flex items-center justify-center rounded-full border-[3px] overflow-hidden z-20 transition-all duration-700 shadow-2xl"
                 style={{
-                  background: `radial-gradient(circle at center, ${slide.accent}18 0%, transparent 70%)`,
-                  borderColor: `${slide.accent}25`,
+                  borderColor: `${slide.accent}50`,
+                  boxShadow: `0 0 40px ${slide.accent}30`,
                 }}
               >
-                <span
-                  className="text-[120px] select-none filter drop-shadow-2xl"
-                  style={{ filter: `drop-shadow(0 0 40px ${slide.accent}80)` }}
-                >
-                  {slide.emoji}
-                </span>
+                <img 
+                  src={slide.image} 
+                  alt={slide.title} 
+                  className="w-full h-full object-cover animate-spin-veryslow"
+                  loading="lazy"
+                />
               </div>
 
-              {/* Orbiting food emojis */}
-              {slide.foodEmojis.map((emoji, i) => {
-                const angle = (i / slide.foodEmojis.length) * 360;
-                const rad = (angle * Math.PI) / 180;
-                const r = 160;
-                const x = 50 + (r / 4.2) * Math.cos(rad);
-                const y = 50 + (r / 4.2) * Math.sin(rad);
+              {/* Orbiting food images */}
+              {slide.foodImages.map((imgUrl, i) => {
                 return (
                   <div
                     key={i}
-                    className="absolute flex h-14 w-14 items-center justify-center rounded-full text-2xl"
+                    className="absolute flex h-[72px] w-[72px] items-center justify-center rounded-full overflow-hidden shadow-xl"
                     style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: "translate(-50%, -50%)",
-                      background: `${slide.accent}15`,
-                      border: `1px solid ${slide.accent}30`,
-                      animation: `spin-slow ${8 + i}s linear infinite`,
+                      left: "50%",
+                      top: "50%",
+                      border: `2px solid ${slide.accent}60`,
+                      animation: `spin-slow 20s linear infinite`,
+                      animationDelay: `-${(i / slide.foodImages.length) * 20}s`,
                     }}
                   >
-                    {emoji}
+                    <img src={imgUrl} alt="dish" className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 );
               })}
@@ -280,7 +295,7 @@ const Hero = () => {
               </div>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#333] text-gray-400 text-sm hover:border-[#c9a84c]/40 hover:text-white transition-all">
                 <MapPin className="h-3.5 w-3.5 text-[#c9a84c]" />
-                Coimbatore
+                Saravanampatti, Coimbatore
               </button>
             </div>
           </div>
@@ -311,8 +326,12 @@ const Hero = () => {
 
       <style>{`
         @keyframes spin-slow {
-          from { transform: translate(-50%, -50%) rotate(0deg) translateX(160px) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg) translateX(160px) rotate(-360deg); }
+          from { transform: translate(-50%, -50%) rotate(0deg) translateX(190px) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg) translateX(190px) rotate(-360deg); }
+        }
+        @keyframes spin-veryslow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
         .scrollbar-none::-webkit-scrollbar { display: none; }
       `}</style>

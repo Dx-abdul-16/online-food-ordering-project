@@ -1,6 +1,7 @@
 flask
-flask-sqlalchemy
 mysql-connector-python
 flask-cors
 firebase-admin
 requests
+gunicorn
+python-dotenv

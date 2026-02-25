@@ -4,9 +4,6 @@ import { Star, Clock, MapPin, Leaf, Zap, ChevronRight, SlidersHorizontal } from 
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 
-const offerColors = [
-  "#fc8019", "#e23744", "#c9a84c", "#10b981", "#8b5cf6",
-];
 
 const FeaturedRestaurants = () => {
   const [restaurants, setRestaurants] = useState<any[]>([]);
@@ -16,8 +13,6 @@ const FeaturedRestaurants = () => {
   const filters = [
     { id: "all", label: "All" },
     { id: "top", label: "Top Rated" },
-    { id: "fast", label: "Fast Delivery" },
-    { id: "offer", label: "Offers" },
     { id: "veg", label: "Pure Veg" },
   ];
 
@@ -39,7 +34,6 @@ const FeaturedRestaurants = () => {
   const filteredRestaurants = restaurants.filter((r) => {
     if (activeFilter === "top") return parseFloat(r.rating) >= 4.3;
     if (activeFilter === "fast") return parseInt(r.deliveryTime) <= 30;
-    if (activeFilter === "offer") return r.offer;
     if (activeFilter === "veg") return r.isVeg;
     return true;
   });
@@ -134,16 +128,6 @@ const FeaturedRestaurants = () => {
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                    {/* Offer Badge (Swiggy-style) */}
-                    {restaurant.offer && (
-                      <div
-                        className="absolute bottom-3 left-3 flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold text-white shadow-lg"
-                        style={{ background: offerColors[idx % offerColors.length] }}
-                      >
-                        <Zap className="h-3 w-3" />
-                        {restaurant.offer}
-                      </div>
-                    )}
 
                     {/* Veg badge */}
                     {restaurant.isVeg && (
@@ -178,7 +162,7 @@ const FeaturedRestaurants = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-[#c9a84c]" />
-                        {restaurant.location || "Coimbatore"}
+                        {restaurant.location || "Saravanampatti, Coimbatore"}
                       </span>
                       <span className="font-medium text-gray-400">₹{restaurant.priceForTwo || "300"} for 2</span>
                     </div>

@@ -15,8 +15,7 @@ def init_db():
         delivery_time VARCHAR(50),
         location VARCHAR(100),
         price_for_two INT,
-        is_veg BOOLEAN DEFAULT FALSE,
-        offer VARCHAR(50)
+        is_veg BOOLEAN DEFAULT FALSE
     )
     """)
 
@@ -41,12 +40,12 @@ def init_db():
         print("Seeding data...")
        
         cursor.execute("""
-            INSERT INTO restaurants (name, cuisine, image, rating, delivery_time, location, price_for_two, is_veg, offer)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO restaurants (name, cuisine, image, rating, delivery_time, location, price_for_two, is_veg)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             "Taj Mahal Kitchen", "North Indian, Mughlai", 
             "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop",
-            4.5, "25-30 min", "Andheri West", 500, False, "20% OFF"
+            4.5, "25-30 min", "Andheri West", 500, False
         ))
         r1_id = cursor.lastrowid
 
@@ -66,12 +65,12 @@ def init_db():
 
        
         cursor.execute("""
-            INSERT INTO restaurants (name, cuisine, image, rating, delivery_time, location, price_for_two, is_veg, offer)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO restaurants (name, cuisine, image, rating, delivery_time, location, price_for_two, is_veg)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             "Green Leaf Restaurant", "South Indian, Pure Veg", 
             "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=400&h=300&fit=crop",
-            4.3, "20-25 min", "Bandra", 350, True, "Free Delivery"
+            4.3, "20-25 min", "Bandra", 350, True
         ))
         r2_id = cursor.lastrowid
         

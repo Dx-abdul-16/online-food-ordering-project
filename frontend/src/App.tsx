@@ -15,11 +15,13 @@ import Register from "./pages/Register";
 import RestaurantDetails from "./pages/RestaurantDetails";
 import Restaurants from "./pages/Restaurants";
 import OrderTracking from "./pages/OrderTracking";
+import About from "./pages/About";
 import { CartProvider } from "./context/CartContext";
 import { Cart } from "./components/cart/Cart";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AIChatbot from "./components/AIChatbot";
+import { ThemeProvider } from "./context/ThemeContext";
+
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <CartProvider>
+      <ThemeProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -56,11 +59,13 @@ const App = () => (
             <Route path="/restaurants" element={<Restaurants />} />
             <Route path="/restaurant/:id" element={<RestaurantDetails />} />
             <Route path="/track-order" element={<OrderTracking />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Cart />
-          <AIChatbot />
+
         </BrowserRouter>
+      </ThemeProvider>
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>

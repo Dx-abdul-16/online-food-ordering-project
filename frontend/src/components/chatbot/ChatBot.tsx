@@ -23,7 +23,6 @@ const initialMessages: Message[] = [
 const quickReplies = [
   "Track my order",
   "Food recommendations",
-  "Today's offers",
   "Contact support",
 ];
 
@@ -52,12 +51,11 @@ const ChatBot = () => {
       const botResponses: Record<string, string> = {
         "track my order": "To track your order, please go to 'My Orders' section in your profile. You can see real-time updates including delivery partner location on the map.",
         "food recommendations": "Based on popular choices, I'd recommend:\n\n🍛 Butter Chicken from Taj Mahal Kitchen\n🍕 Margherita Pizza from Pizza Paradise\n🍚 Hyderabadi Biryani from Biryani House\n\nWould you like me to add any of these to your cart?",
-        "today's offers": "🎉 Today's Hot Offers:\n\n• 20% OFF on first order\n• Buy 1 Get 1 on pizzas\n• Free delivery above ₹299\n• ₹100 OFF on orders above ₹500\n\nUse code: FOOD20",
         "contact support": "You can reach our support team:\n\n📞 Phone: +91 98765 43210\n📧 Email: support@foodexpress.in\n⏰ Available 24/7\n\nWould you like me to connect you with a support agent?",
       };
 
       const lowerInput = input.toLowerCase();
-      let response = "I'm not sure I understand. Could you please rephrase your question? You can ask me about:\n\n• Order tracking\n• Food recommendations\n• Today's offers\n• Contact support";
+      let response = "I'm not sure I understand. Could you please rephrase your question? You can ask me about:\n\n• Order tracking\n• Food recommendations\n• Contact support";
 
       for (const [key, value] of Object.entries(botResponses)) {
         if (lowerInput.includes(key)) {

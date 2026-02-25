@@ -1,0 +1,6 @@
+fulfillment_mode: 1060 (42S21): Duplicate column name 'fulfillment_mode'
+latitude: 1060 (42S21): Duplicate column name 'latitude'
+longitude: 1060 (42S21): Duplicate column name 'longitude'
+delivery_address: 1060 (42S21): Duplicate column name 'delivery_address'
+payment_id: 1060 (42S21): Duplicate column name 'payment_id'
+Done altering.

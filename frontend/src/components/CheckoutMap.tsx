@@ -1,25 +1,14 @@
-/**
- * CheckoutMap — lazy-loaded Leaflet map for the checkout delivery pin.
- * Imported via React.lazy() in Checkout.tsx so a Leaflet crash
- * cannot blank the entire checkout page.
- */
 import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // ── Custom gold/orange pin icon ───────────────────────────────────────────────
-const PinIcon = L.divIcon({
-  className: "",
-  html: `<div style="
-    width:36px;height:36px;border-radius:50% 50% 50% 0;
-    background:linear-gradient(135deg,#c9a84c,#fc8019);
-    transform:rotate(-45deg);
-    border:3px solid #fff;
-    box-shadow:0 4px 12px rgba(0,0,0,0.5);
-  "></div>`,
-  iconSize: [36, 36],
-  iconAnchor: [18, 36],
+const PinIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/9131/9131546.png', // Fallback standard icon
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
 });
 
 // ── Smooth fly-to when coords change ─────────────────────────────────────────
@@ -33,27 +22,27 @@ function FlyTo({ coords }: { coords: [number, number] }) {
 async function reverseGeocode(lat: number, lng: number, setAddress: (a: string) => void) {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=622381795a5c45e7980ea9cf54170eee`
     );
     const data = await res.json();
-    if (data.display_name) setAddress(data.display_name);
+    if (data.features && data.features.length > 0) {
+      setAddress(data.features[0].properties.formatted);
+    } else {
+      setAddress(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    }
   } catch {
     setAddress(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
   }
 }
 
-// ── Draggable + clickable pin ─────────────────────────────────────────────────
-function DraggablePin({
-  position,
+// ── Map interactive events component ──────────────────────────────────────────
+function MapEvents({
   setPosition,
   setAddress,
 }: {
-  position: [number, number];
   setPosition: (p: [number, number]) => void;
   setAddress: (a: string) => void;
 }) {
-  const markerRef = useRef<L.Marker>(null);
-
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
@@ -61,25 +50,7 @@ function DraggablePin({
       reverseGeocode(lat, lng, setAddress);
     },
   });
-
-  return (
-    <Marker
-      position={position}
-      icon={PinIcon}
-      draggable
-      ref={markerRef}
-      eventHandlers={{
-        dragend() {
-          const m = markerRef.current;
-          if (m) {
-            const { lat, lng } = m.getLatLng();
-            setPosition([lat, lng]);
-            reverseGeocode(lat, lng, setAddress);
-          }
-        },
-      }}
-    />
-  );
+  return null;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -90,18 +61,25 @@ interface CheckoutMapProps {
 }
 
 export default function CheckoutMap({ coords, setCoords, setAddress }: CheckoutMapProps) {
+  const markerRef = useRef<L.Marker>(null);
+
+  const dragHandlers = {
+    dragend() {
+      const m = markerRef.current;
+      if (m) {
+        const { lat, lng } = m.getLatLng();
+        setCoords([lat, lng]);
+        reverseGeocode(lat, lng, setAddress);
+      }
+    },
+  };
+
   return (
     <MapContainer
-      key={`map-${coords[0].toFixed(3)}-${coords[1].toFixed(3)}`}
       center={coords}
       zoom={15}
       style={{ height: "100%", width: "100%", background: "#1a1a1a" }}
       scrollWheelZoom={false}
-      ref={(mapInstance: any) => {
-        if (mapInstance) {
-          setTimeout(() => mapInstance.invalidateSize(), 150);
-        }
-      }}
     >
       <FlyTo coords={coords} />
       <TileLayer
@@ -109,10 +87,13 @@ export default function CheckoutMap({ coords, setCoords, setAddress }: CheckoutM
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
         maxZoom={19}
       />
-      <DraggablePin
+      <MapEvents setPosition={setCoords} setAddress={setAddress} />
+      <Marker
         position={coords}
-        setPosition={setCoords}
-        setAddress={setAddress}
+        icon={PinIcon}
+        draggable={true}
+        ref={markerRef}
+        eventHandlers={dragHandlers}
       />
     </MapContainer>
   );

@@ -189,7 +189,7 @@ const RestaurantDetails = () => {
                 </span>
                 <span className="flex items-center gap-1 bg-black/60 backdrop-blur rounded-full px-3 py-1.5 border border-white/10 text-gray-300">
                   <MapPin className="h-3 w-3 text-[#c9a84c]" />
-                  {restaurant.location || "Coimbatore"}
+                  {restaurant.location || "Saravanampatti, Coimbatore"}
                 </span>
                 {restaurant.isVeg && (
                   <span className="flex items-center gap-1 bg-green-500/20 border border-green-500/40 rounded-full px-3 py-1.5 text-green-400">
@@ -198,11 +198,7 @@ const RestaurantDetails = () => {
                 )}
               </div>
             </div>
-            {restaurant.offer && (
-              <Badge className="w-fit bg-gradient-to-r from-[#fc8019] to-[#e23744] text-white text-sm px-4 py-1.5 font-bold border-0 rounded-full">
-                🔥 {restaurant.offer}
-              </Badge>
-            )}
+
           </div>
         </div>
       </div>

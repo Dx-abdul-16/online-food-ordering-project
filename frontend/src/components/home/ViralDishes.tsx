@@ -7,12 +7,12 @@ import { useState } from "react";
 import { Flame, ChevronRight } from "lucide-react";
 
 const dishes = [
-  { name: "Afghani Alfaham", emoji: "🔥", desc: "Whole roasted chicken marinated in Afghani spices, charcoal grilled to perfection.", tag: "Best Seller", price: "₹399" },
-  { name: "Chicken Mandi", emoji: "🍗", desc: "Slow-cooked tender chicken on aromatic saffron rice with traditional Yemeni spices.", tag: "Viral", price: "₹349" },
-  { name: "Mutton Raan", emoji: "🦴", desc: "50-hour marinated whole leg of mutton slow roasted in a Tandoor. A royal feast.", tag: "Chef's Choice", price: "₹899" },
-  { name: "Mexican Shawarma", emoji: "🌯", desc: "A fusion blast — juicy chicken with salsa, guacamole, jalapeños, and garlic sauce.", tag: "New", price: "₹199" },
-  { name: "Malai Kebab", emoji: "🍢", desc: "Melt-in-your-mouth cream-marinated chicken skewers grilled over live charcoal.", tag: "Fan Fav", price: "₹279" },
-  { name: "Mutton Ribs", emoji: "🥩", desc: "BBQ-glazed tender mutton ribs with a smoky Arabic spice crust.", tag: "Weekend Special", price: "₹699" },
+  { name: "Afghani Alfaham", image: "https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?w=150&h=150&fit=crop", desc: "Whole roasted chicken marinated in Afghani spices, charcoal grilled to perfection.", tag: "Best Seller", price: "₹399" },
+  { name: "Chicken Mandi", image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=150&h=150&fit=crop", desc: "Slow-cooked tender chicken on aromatic saffron rice with traditional Yemeni spices.", tag: "Viral", price: "₹349" },
+  { name: "Mutton Raan", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=150&h=150&fit=crop", desc: "50-hour marinated whole leg of mutton slow roasted in a Tandoor. A royal feast.", tag: "Chef's Choice", price: "₹899" },
+  { name: "Mexican Shawarma", image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=150&h=150&fit=crop", desc: "A fusion blast — juicy chicken with salsa, guacamole, jalapeños, and garlic sauce.", tag: "New", price: "₹199" },
+  { name: "Malai Kebab", image: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=150&h=150&fit=crop", desc: "Melt-in-your-mouth cream-marinated chicken skewers grilled over live charcoal.", tag: "Fan Fav", price: "₹279" },
+  { name: "Mutton Ribs", image: "https://images.unsplash.com/photo-1600891964092-4316c288032e?w=150&h=150&fit=crop", desc: "BBQ-glazed tender mutton ribs with a smoky Arabic spice crust.", tag: "Weekend Special", price: "₹699" },
 ];
 
 const tagColors: Record<string, string> = {
@@ -66,16 +66,21 @@ const ViralDishes = () => {
               onMouseEnter={() => setHovered(idx)}
               onMouseLeave={() => setHovered(null)}
             >
-              {/* Emoji bubble */}
+              {/* Dish Photo */}
               <div
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl transition-all duration-300"
+                className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 overflow-hidden"
                 style={{
-                  background: hovered === idx ? `${tagColors[dish.tag]}22` : "#1f1f1f",
-                  border: `1px solid ${hovered === idx ? tagColors[dish.tag] + "50" : "#2f2f2f"}`,
+                  border: `2px solid ${hovered === idx ? tagColors[dish.tag] : "#2f2f2f"}`,
                   transform: hovered === idx ? "scale(1.1) rotate(-3deg)" : "scale(1)",
+                  boxShadow: hovered === idx ? `0 0 15px ${tagColors[dish.tag]}40` : "none",
                 }}
               >
-                {dish.emoji}
+                <img 
+                  src={dish.image} 
+                  alt={dish.name} 
+                  className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                  loading="lazy"
+                />
               </div>
 
               {/* Text */}

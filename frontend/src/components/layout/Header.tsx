@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Menu, ShoppingCart, User, MapPin, ChevronDown,
-  Search, Navigation, Loader2, X, Check
+  Search, Navigation, Loader2, X, Check, Sun, Moon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
+import { useTheme } from "@/context/ThemeContext";
 import { toast } from "sonner";
 
 // ── Popular cities ─────────────────────────────────────────────────────────
@@ -140,7 +141,6 @@ function LocationPermissionModal({
             {[
               { icon: "🍽️", label: "Find restaurants near you" },
               { icon: "⏱️", label: "Real-time delivery estimates" },
-              { icon: "🎁", label: "Location-based offers & discounts" },
               { icon: "🔒", label: "Your data is never stored or shared" },
             ].map(({ icon, label }) => (
               <div key={label} className="flex items-center gap-3">
@@ -396,9 +396,10 @@ function LocationPicker({
 // ── Header ─────────────────────────────────────────────────────────────────
 const Header = () => {
   const { openCart, items } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [locationName, setLocationName] = useState("Coimbatore");
+  const [locationName, setLocationName] = useState("Saravanampatti, Coimbatore");
   const loc = useLocation();
 
   useEffect(() => {
@@ -410,7 +411,6 @@ const Header = () => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/restaurants", label: "Restaurants" },
-    { href: "/offers", label: "Offers" },
     { href: "/about", label: "About Us" },
   ];
 
@@ -429,10 +429,6 @@ const Header = () => {
           : "bg-[#0d0d0d]/95 border-b border-[#c9a84c]/10"
       } backdrop-blur-md`}
     >
-      {/* Promo bar */}
-      <div className="bg-gradient-to-r from-[#c9a84c] via-[#f0c060] to-[#c9a84c] py-1.5 text-center text-xs font-semibold text-black tracking-wide">
-        🎉 FREE DELIVERY on orders above ₹299 &nbsp;|&nbsp; Use code: <span className="font-bold">ARABIYA50</span> for 50% OFF &nbsp;|&nbsp; 🕌 Authentic Arabic Cuisine
-      </div>
 
       <div className="container flex h-16 items-center justify-between gap-3">
         {/* Logo */}
@@ -478,6 +474,17 @@ const Header = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-300 hover:text-[#c9a84c] hover:bg-[#c9a84c]/10 transition-all"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
           {/* Cart */}
           <Button
             variant="ghost"

@@ -3,18 +3,18 @@ import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const categories = [
-  { name: "Shawarma", emoji: "🥙", bg: "from-amber-900/40 to-amber-800/20", color: "#c9a84c" },
-  { name: "Biryani", emoji: "🍚", bg: "from-orange-900/40 to-orange-800/20", color: "#fc8019" },
-  { name: "Mandi", emoji: "🍗", bg: "from-red-900/40 to-red-800/20", color: "#e23744" },
-  { name: "Pizza", emoji: "🍕", bg: "from-yellow-900/40 to-yellow-800/20", color: "#f59e0b" },
-  { name: "Burgers", emoji: "🍔", bg: "from-orange-900/40 to-red-900/20", color: "#ea580c" },
-  { name: "Kebabs", emoji: "🍢", bg: "from-rose-900/40 to-rose-800/20", color: "#f43f5e" },
-  { name: "Alfaham", emoji: "🔥", bg: "from-red-950/40 to-orange-900/20", color: "#ef4444" },
-  { name: "Chinese", emoji: "🥡", bg: "from-red-900/40 to-pink-900/20", color: "#ec4899" },
-  { name: "Desserts", emoji: "🍰", bg: "from-pink-900/40 to-purple-900/20", color: "#a855f7" },
-  { name: "Beverages", emoji: "🥤", bg: "from-blue-900/40 to-cyan-900/20", color: "#06b6d4" },
-  { name: "North Indian", emoji: "🍛", bg: "from-orange-900/40 to-amber-900/20", color: "#f97316" },
-  { name: "South Indian", emoji: "🍜", bg: "from-green-900/40 to-emerald-900/20", color: "#10b981" },
+  { name: "Shawarma", image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=200&h=200&fit=crop", bg: "from-amber-900/40 to-amber-800/20", color: "#c9a84c" },
+  { name: "Biryani", image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200&h=200&fit=crop", bg: "from-orange-900/40 to-orange-800/20", color: "#fc8019" },
+  { name: "Mandi", image: "https://images.unsplash.com/photo-1633321702518-7feccafb94d5?w=200&h=200&fit=crop", bg: "from-red-900/40 to-red-800/20", color: "#e23744" },
+  { name: "Pizza", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop", bg: "from-yellow-900/40 to-yellow-800/20", color: "#f59e0b" },
+  { name: "Burgers", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop", bg: "from-orange-900/40 to-red-900/20", color: "#ea580c" },
+  { name: "Kebabs", image: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=200&h=200&fit=crop", bg: "from-rose-900/40 to-rose-800/20", color: "#f43f5e" },
+  { name: "Alfaham", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=200&h=200&fit=crop", bg: "from-red-950/40 to-orange-900/20", color: "#ef4444" },
+  { name: "Chinese", image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200&h=200&fit=crop", bg: "from-red-900/40 to-pink-900/20", color: "#ec4899" },
+  { name: "Desserts", image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=200&h=200&fit=crop", bg: "from-pink-900/40 to-purple-900/20", color: "#a855f7" },
+  { name: "Beverages", image: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=200&h=200&fit=crop", bg: "from-blue-900/40 to-cyan-900/20", color: "#06b6d4" },
+  { name: "North Indian", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=200&fit=crop", bg: "from-orange-900/40 to-amber-900/20", color: "#f97316" },
+  { name: "South Indian", image: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=200&h=200&fit=crop", bg: "from-green-900/40 to-emerald-900/20", color: "#10b981" },
 ];
 
 const Categories = () => {
@@ -73,16 +73,22 @@ const Categories = () => {
               onMouseEnter={() => setHoveredIdx(idx)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
-              {/* Circle image (Zomato style) */}
+              {/* Circle image */}
               <div
-                className={`relative flex h-[100px] w-[100px] items-center justify-center rounded-full bg-gradient-to-br ${cat.bg} border-2 transition-all duration-300 overflow-hidden`}
+                className={`relative flex h-[100px] w-[100px] items-center justify-center rounded-full border-2 transition-all duration-300 overflow-hidden`}
                 style={{
                   borderColor: hoveredIdx === idx ? cat.color : "#2a2a2a",
                   boxShadow: hoveredIdx === idx ? `0 0 20px ${cat.color}40` : "none",
                   transform: hoveredIdx === idx ? "translateY(-4px) scale(1.05)" : "none",
                 }}
               >
-                <span className="text-4xl select-none">{cat.emoji}</span>
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="absolute inset-0 h-full w-full object-cover rounded-full"
+                  loading="lazy"
+                />
+
 
                 {/* Shimmer on hover */}
                 <div

@@ -2,7 +2,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
 import Categories from "@/components/home/Categories";
-import OfferBanners from "@/components/home/OfferBanners";
 import RecommendedFood from "@/components/home/RecommendedFood";
 import ViralDishes from "@/components/home/ViralDishes";
 import FeaturedRestaurants from "@/components/home/FeaturedRestaurants";
@@ -17,8 +16,7 @@ const Index = () => {
         {/* 1. Hero - Street Arabiya atmosphere + Zomato mode tabs + search */}
         <Hero />
 
-        {/* 2. Offer Banners - Swiggy-style promo strip */}
-        <OfferBanners />
+
 
         {/* 3. Food Categories - Zomato-style circular cuisine icons */}
         <Categories />

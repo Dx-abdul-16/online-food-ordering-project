@@ -52,11 +52,11 @@ const OrderTracking = () => {
           id: "DEMO",
           status: "on_the_way",
           restaurant_name: "Street Arabiya",
-          restaurant_location: "Podanur, Coimbatore",
+          restaurant_location: "Near Sathy Road Junction, Saravanampatti, Coimbatore, Tamil Nadu",
           restaurant_lat: 11.0168,
           restaurant_lng: 76.9558,
           total_amount: 349,
-          delivery_address: "Ganapathy, Coimbatore",
+          delivery_address: "Near KG College, Saravanampatti, Coimbatore, Tamil Nadu",
           items: [
             { item_name: "Chicken Shawarma", quantity: 2, price: 149 },
             { item_name: "Afghani Alfaham", quantity: 1, price: 399 },
@@ -257,7 +257,7 @@ const OrderTracking = () => {
               <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Restaurant</span>
             </div>
             <div className="text-base font-bold text-white">{order?.restaurant_name || "—"}</div>
-            <div className="text-xs text-gray-500 mt-1">{order?.restaurant_location || "Coimbatore"}</div>
+            <div className="text-xs text-gray-500 mt-1">{order?.restaurant_location || "Saravanampatti, Coimbatore, Tamil Nadu"}</div>
             <div className="mt-2 text-xs font-bold text-[#c9a84c]">Total: ₹{order?.total_amount}</div>
           </div>
         </div>

@@ -282,7 +282,7 @@ const AdminDashboard = () => {
                                       </div>
                                       <div className="space-y-2">
                                           <Label className="text-[10px] font-black uppercase text-gray-500 ml-1">Store Location</Label>
-                                          <Input value={newRest.location} onChange={(e) => setNewRest({...newRest, location: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] text-white h-12 rounded-xl focus:border-[#c9a84c]" placeholder="e.g. Coimbatore, TN" />
+                                          <Input value={newRest.location} onChange={(e) => setNewRest({...newRest, location: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] text-white h-12 rounded-xl focus:border-[#c9a84c]" placeholder="e.g. Saravanampatti, Coimbatore, TN" />
                                       </div>
                                       <div className="space-y-2">
                                           <Label className="text-[10px] font-black uppercase text-gray-500 ml-1">Image URL</Label>

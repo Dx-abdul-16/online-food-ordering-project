@@ -19,14 +19,18 @@ declare global {
   }
 }
 
-// ── Reverse geocode (OpenStreetMap Nominatim) ─────────────────────────────
+// ── Reverse geocode (Geoapify) ────────────────────────────────────────────────
 async function reverseGeocode(lat: number, lng: number, setAddress: (a: string) => void) {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=622381795a5c45e7980ea9cf54170eee`
     );
     const data = await res.json();
-    if (data.display_name) setAddress(data.display_name);
+    if (data.features && data.features.length > 0) {
+      setAddress(data.features[0].properties.formatted);
+    } else {
+      setAddress(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    }
   } catch {
     setAddress(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
   }
@@ -38,13 +42,13 @@ const CheckoutMap = lazy(() => import("@/components/CheckoutMap"));
 // ── Error boundary for the map ────────────────────────────────────────────────
 class MapErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean }
+  { hasError: boolean, errorMsg: string }
 > {
   constructor(props: any) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMsg: "" };
   }
-  static getDerivedStateFromError() { return { hasError: true }; }
+  static getDerivedStateFromError(error: any) { return { hasError: true, errorMsg: error?.message || String(error) }; }
   componentDidCatch(err: any) { console.warn("Map error:", err); }
   render() {
     if (this.state.hasError) {
@@ -52,6 +56,7 @@ class MapErrorBoundary extends React.Component<
         <div className="flex h-[280px] flex-col items-center justify-center gap-3 rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] text-center px-6">
           <AlertTriangle className="h-7 w-7 text-[#c9a84c]" />
           <p className="text-sm text-gray-400">Map couldn't load.</p>
+          <p className="text-xs text-red-500 font-mono break-all">{this.state.errorMsg}</p>
           <p className="text-xs text-gray-600">
             Enter your address manually in the field above — your order will still go through.
           </p>
