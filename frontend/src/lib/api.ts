@@ -4,7 +4,7 @@
  * All requests go through Vite's /api proxy → Flask
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://online-food-ordering-project-production.up.railway.app/api";
 
 export const api = {
   get: async (endpoint: string) => {
