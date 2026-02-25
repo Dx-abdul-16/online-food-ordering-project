@@ -25,7 +25,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 app.register_blueprint(admin_bp,      url_prefix="/api/admin")
 app.register_blueprint(auth_bp,       url_prefix="/api/auth")
 app.register_blueprint(restaurant_bp, url_prefix="/api/restaurants")
