@@ -9,7 +9,7 @@ import {
   Utensils, DollarSign, ListOrdered, Trash2, Plus, 
   Leaf, MapPin, ChefHat, ShoppingBag, Clock, 
   CheckCircle2, Loader2, LogOut, ExternalLink,
-  ChevronRight
+  ChevronRight, Upload, Pencil
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
@@ -40,6 +40,8 @@ const RestaurantDashboard = () => {
         discount: "0"
     });
     const [isAdding, setIsAdding] = useState(false);
+    const [editingItem, setEditingItem] = useState<any>(null);
+    const [uploading, setUploading] = useState(false);
 
     const loadData = async () => {
         const userStr = localStorage.getItem('user');
@@ -79,6 +81,30 @@ const RestaurantDashboard = () => {
         navigate('/login');
     };
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const res = await api.upload('/uploads/image', formData);
+            if (res.success && res.url) {
+                const fullUrl = `https://online-food-ordering-project-production.up.railway.app${res.url}`;
+                if (editingItem) {
+                    setEditingItem({ ...editingItem, image: fullUrl });
+                } else {
+                    setNewItem({ ...newItem, image: fullUrl });
+                }
+                toast.success("Image uploaded!");
+            }
+        } catch (error) {
+            toast.error("Image upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleAddItem = async () => {
         if (!restaurant) return;
         try {
@@ -105,6 +131,26 @@ const RestaurantDashboard = () => {
             }
         } catch (error) {
            toast.error("Failed to add item");
+        }
+    };
+
+    const handleEditItem = async () => {
+        if (!editingItem) return;
+        try {
+            const res = await api.put(`/restaurants/menu/edit/${editingItem.id}`, {
+                name: editingItem.name,
+                price: parseFloat(editingItem.price),
+                description: editingItem.description,
+                image: editingItem.image,
+                isVeg: editingItem.isVeg
+            });
+            if (res.success) {
+                toast.success("Item updated!");
+                setEditingItem(null);
+                loadData();
+            }
+        } catch (error) {
+            toast.error("Failed to update item");
         }
     };
 
@@ -273,6 +319,19 @@ const RestaurantDashboard = () => {
                                         <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Description</Label>
                                         <Input value={newItem.description} onChange={(e) => setNewItem({...newItem, description: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] rounded-xl h-12 focus:border-[#c9a84c] text-white" />
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Dish Image</Label>
+                                        <div className="flex gap-3 items-center">
+                                            {newItem.image && <img src={newItem.image} alt="preview" className="h-16 w-16 rounded-xl object-cover border border-[#2a2a2a]" />}
+                                            <label className="flex-1 cursor-pointer">
+                                                <div className="flex items-center gap-2 justify-center bg-[#0d0d0d] border border-dashed border-[#2a2a2a] rounded-xl h-12 hover:border-[#c9a84c] transition-all text-gray-400 hover:text-[#c9a84c]">
+                                                    <Upload className="h-4 w-4" />
+                                                    <span className="text-xs font-bold">{uploading ? 'Uploading...' : 'Upload Image'}</span>
+                                                </div>
+                                                <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                                            </label>
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Current Stock</Label>
@@ -315,8 +374,8 @@ const RestaurantDashboard = () => {
                                         <p className="text-xs text-gray-500 font-medium italic line-clamp-2">{item.description}</p>
                                     </div>
                                     <div className="flex gap-2 pt-2">
-                                      <Button variant="outline" className="flex-1 border-[#2a2a2a] text-white hover:bg-white/5 rounded-xl h-10 font-bold text-xs">
-                                          EDIT
+                                      <Button variant="outline" className="flex-1 border-[#2a2a2a] text-white hover:bg-white/5 rounded-xl h-10 font-bold text-xs" onClick={() => setEditingItem({...item, price: String(item.price)})}>
+                                          <Pencil className="h-3 w-3 mr-1" /> EDIT
                                       </Button>
                                       <Button variant="destructive" className="h-10 w-10 p-0 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white" onClick={async () => {
                                         if(!confirm("Erase this item?")) return;
@@ -333,6 +392,50 @@ const RestaurantDashboard = () => {
                 </TabsContent>
               </Tabs>
             </div>
+
+            {/* EDIT ITEM DIALOG */}
+            <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+                <DialogContent className="bg-[#111111] text-white border-[#2a2a2a] rounded-3xl p-8">
+                    <DialogHeader className="mb-6">
+                        <DialogTitle className="text-2xl font-black tracking-tighter">Edit Menu Item</DialogTitle>
+                        <DialogDescription className="text-gray-500 font-medium italic">Update dish details.</DialogDescription>
+                    </DialogHeader>
+                    {editingItem && (
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Dish Name</Label>
+                                <Input value={editingItem.name} onChange={(e) => setEditingItem({...editingItem, name: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] rounded-xl h-12 focus:border-[#c9a84c] text-white" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Price (₹)</Label>
+                                <Input type="number" value={editingItem.price} onChange={(e) => setEditingItem({...editingItem, price: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] rounded-xl h-12 focus:border-[#c9a84c] text-white" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Description</Label>
+                                <Input value={editingItem.description || ""} onChange={(e) => setEditingItem({...editingItem, description: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] rounded-xl h-12 focus:border-[#c9a84c] text-white" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="uppercase text-[10px] font-black text-gray-500 ml-1">Dish Image</Label>
+                                <div className="flex gap-3 items-center">
+                                    {editingItem.image && <img src={editingItem.image} alt="preview" className="h-16 w-16 rounded-xl object-cover border border-[#2a2a2a]" />}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="flex items-center gap-2 justify-center bg-[#0d0d0d] border border-dashed border-[#2a2a2a] rounded-xl h-12 hover:border-[#c9a84c] transition-all text-gray-400 hover:text-[#c9a84c]">
+                                            <Upload className="h-4 w-4" />
+                                            <span className="text-xs font-bold">{uploading ? 'Uploading...' : 'Upload New Image'}</span>
+                                        </div>
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-[#0d0d0d] p-4 rounded-2xl border border-[#2a2a2a] mt-4">
+                                <input type="checkbox" id="editVeg" checked={editingItem.isVeg} onChange={(e) => setEditingItem({...editingItem, isVeg: e.target.checked})} className="h-5 w-5 accent-[#c9a84c] bg-[#111111]" />
+                                <Label htmlFor="editVeg" className="font-bold text-gray-300">Vegetarian Friendly?</Label>
+                            </div>
+                        </div>
+                    )}
+                    <Button onClick={handleEditItem} className="w-full bg-[#c9a84c] text-black hover:bg-[#b8943d] h-14 rounded-2xl font-black text-lg mt-8 shadow-xl shadow-[#c9a84c]/10">UPDATE ENTRY</Button>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

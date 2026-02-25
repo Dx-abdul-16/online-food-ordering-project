@@ -173,6 +173,30 @@ def add_menu_item_by_restaurant(restaurant_id):
         cursor.close()
         db.close()
 
+@restaurant_bp.route("/menu/edit/<int:item_id>", methods=["PUT"])
+def edit_menu_item(item_id):
+    data = request.json
+    name = data.get("name")
+    price = data.get("price")
+    description = data.get("description", "")
+    image = data.get("image")
+    is_veg = data.get("isVeg", False)
+    
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        cursor.execute(
+            "UPDATE menu_items SET name=%s, price=%s, description=%s, image=%s, is_veg=%s WHERE id=%s",
+            (name, price, description, image, is_veg, item_id)
+        )
+        db.commit()
+        return jsonify({"success": True, "message": "Item updated successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        db.close()
+
 @restaurant_bp.route("/menu/delete/<int:item_id>", methods=["DELETE"])
 def delete_menu_item(item_id):
     db = get_db()
