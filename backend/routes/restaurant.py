@@ -147,6 +147,46 @@ def add_menu_item():
         cursor.close()
         db.close()
 
+# Route that matches frontend URL: POST /restaurants/menu/<restaurant_id>
+@restaurant_bp.route("/menu/<int:restaurant_id>", methods=["POST"])
+def add_menu_item_by_restaurant(restaurant_id):
+    data = request.json
+    name = data.get("name")
+    price = data.get("price")
+    description = data.get("description", "")
+    image = data.get("image", "https://images.unsplash.com/photo-1546069901-ba9599a7e63c")
+    is_veg = data.get("isVeg", False)
+    
+    db = get_db()
+    cursor = db.cursor()
+    
+    try:
+        cursor.execute(
+            "INSERT INTO menu_items (restaurant_id, name, price, description, image, is_veg) VALUES (%s, %s, %s, %s, %s, %s)",
+            (restaurant_id, name, price, description, image, is_veg)
+        )
+        db.commit()
+        return jsonify({"success": True, "message": "Item added successfully", "id": cursor.lastrowid})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        db.close()
+
+@restaurant_bp.route("/menu/delete/<int:item_id>", methods=["DELETE"])
+def delete_menu_item(item_id):
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        cursor.execute("DELETE FROM menu_items WHERE id = %s", (item_id,))
+        db.commit()
+        return jsonify({"success": True, "message": "Item deleted"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        db.close()
+
 @restaurant_bp.route("/orders/<int:restaurant_id>", methods=["GET"])
 def get_restaurant_orders(restaurant_id):
     db = get_db()
