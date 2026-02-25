@@ -1,12 +1,12 @@
 import mysql.connector
 import os
 
-
 def get_db():
     return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST", "localhost"),
+        host=os.getenv("MYSQLHOST", "caboose.proxy.rlwy.net"),
         user=os.getenv("MYSQLUSER", "root"),
-        password=os.getenv("MYSQLPASSWORD", "638638"),
-        database=os.getenv("MYSQLDATABASE", "food_ordering"),
-        port=int(os.getenv("MYSQLPORT", 3306)),
+        password=os.getenv("MYSQLPASSWORD", "CAUtybWeBlZZbEyjgbNhllfQqyUfjASN"),
+        database=os.getenv("MYSQLDATABASE", "railway"),
+        port=int(os.getenv("MYSQLPORT", "47013")),
         use_pure=True 
+    )
