@@ -21,6 +21,7 @@ import { Cart } from "./components/cart/Cart";
 import Checkout from "./pages/Checkout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./context/ThemeContext";
+import CustomCursor from "./components/CustomCursor";
 
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Cart />
+          <CustomCursor />
 
         </BrowserRouter>
       </ThemeProvider>
