@@ -45,17 +45,20 @@ const Login = () => {
         console.log('Login successful:', data);
         if (data.success && data.user) {
           // Store user data in localStorage
-          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('user', JSON.stringify({ ...data.user, email: formData.email }));
+          toast.success("Login successful! Redirecting...");
 
           const role = data.user.role;
           if (role === 'admin') navigate('/admin/dashboard');
           else if (role === 'hotel') navigate('/restaurant/dashboard');
           else if (role === 'delivery') navigate('/delivery/dashboard');
           else navigate('/user/dashboard');
+        } else {
+          toast.error(data.message || "Login failed");
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
-          alert("Passwords do not match");
+          toast.error("Passwords do not match");
           setLoading(false);
           return;
         }
@@ -67,12 +70,15 @@ const Login = () => {
         });
         console.log('Signup successful:', data);
         if (data.success) {
+          toast.success("Account created! Please login.");
           setIsLogin(true); // Switch to login after signup
+        } else {
+          toast.error(data.message || "Signup failed");
         }
       }
     } catch (error: any) {
       console.error('Auth Error:', error);
-      alert("Authentication failed. Please check your details.");
+      toast.error(error.message || "Authentication failed. Please check your details.");
     } finally {
       setLoading(false);
     }

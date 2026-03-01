@@ -1,10 +1,18 @@
 /**
  * FoodExpress API client
- * Backend: Python Flask + MySQL running on VITE_BACKEND_HOST (default: localhost:5000)
- * All requests go through Vite's /api proxy → Flask
+ * 
+ * Railway Setup: Set VITE_API_BASE_URL in frontend service variables to:
+ *   https://${{backend.RAILWAY_PUBLIC_DOMAIN}}/api
+ * This auto-connects frontend → backend using Railway reference variables.
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://online-food-ordering-project-production.up.railway.app/api";
+// Build the API URL — ensure HTTPS for production
+const rawUrl = import.meta.env.VITE_API_BASE_URL 
+  || import.meta.env.VITE_BACKEND_HOST 
+  || "https://online-food-ordering-project-production.up.railway.app/api";
+
+// Force HTTPS in production to prevent Mixed Content errors
+export const API_BASE_URL = rawUrl.replace(/^http:\/\//i, "https://");
 
 export const api = {
   get: async (endpoint: string) => {

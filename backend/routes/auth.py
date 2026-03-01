@@ -74,10 +74,18 @@ def login():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(
-        "SELECT id, username, role, name, is_approved FROM users WHERE email=%s AND password=%s",
-        (email, password)
-    )
+    try:
+        # Try with new columns first
+        cursor.execute(
+            "SELECT id, username, role, name, is_approved FROM users WHERE email=%s AND password=%s",
+            (email, password)
+        )
+    except Exception:
+        # Fallback if new columns don't exist yet (migration not run)
+        cursor.execute(
+            "SELECT id, username, role FROM users WHERE email=%s AND password=%s",
+            (email, password)
+        )
 
     user = cursor.fetchone()
 
@@ -85,12 +93,14 @@ def login():
     db.close()
 
     if user:
-        # Check approval for delivery/hotel roles
-        if user['role'] in ['delivery', 'hotel'] and not user.get('is_approved'):
+        # Check approval for delivery/hotel roles (only if column exists)
+        is_approved = user.get('is_approved')
+        if is_approved is not None and user['role'] in ['delivery', 'hotel'] and not is_approved:
             return jsonify({
                 "success": False,
                 "message": f"Your {user['role']} account is pending admin approval. Please wait for verification."
             }), 403
+
 
         return jsonify({
             "success": True,
@@ -99,7 +109,8 @@ def login():
                 "id": user['id'],
                 "username": user['username'],
                 "role": user['role'],
-                "name": user['name'] if user['name'] else ""
+                "name": user.get('name') or user['username'],
+                "email": data.get('email')
             }
         })
     else:
@@ -146,20 +157,32 @@ def google_auth():
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        cursor.execute("SELECT id, username, role, name FROM users WHERE email=%s", (email,))
+        # Try with name column, fallback without it
+        try:
+            cursor.execute("SELECT id, username, role, name FROM users WHERE email=%s", (email,))
+        except Exception:
+            cursor.execute("SELECT id, username, role FROM users WHERE email=%s", (email,))
         user = cursor.fetchone()
 
         if user:
             if user['role'] != 'user':
+                cursor.close()
+                db.close()
                 return jsonify({
                     "success": False, 
                     "message": f"This Google account is linked to a {user['role']} profile. Please use email and password."
                 }), 403
 
-            if not user['name'] and name:
-                cursor.execute("UPDATE users SET name=%s WHERE id=%s", (name, user['id']))
-                db.commit()
+            # Try updating name if missing
+            try:
+                if not user.get('name') and name:
+                    cursor.execute("UPDATE users SET name=%s WHERE id=%s", (name, user['id']))
+                    db.commit()
+            except Exception:
+                pass
 
+            cursor.close()
+            db.close()
             return jsonify({
                 "success": True,
                 "message": "Login successful",
@@ -167,7 +190,8 @@ def google_auth():
                     "id": user['id'],
                     "username": user['username'],
                     "role": user['role'],
-                    "name": name if name else user['name']
+                    "name": name or user.get('name') or user['username'],
+                    "email": email
                 }
             })
         else:
@@ -175,10 +199,17 @@ def google_auth():
             password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
             role = "user"
 
-            cursor.execute(
-                "INSERT INTO users (username, email, password, role, name, is_approved) VALUES (%s,%s,%s,%s,%s,%s)",
-                (username, email, password, role, name, True)
-            )
+            # Try inserting with new columns, fallback to basic insert
+            try:
+                cursor.execute(
+                    "INSERT INTO users (username, email, password, role, name, is_approved) VALUES (%s,%s,%s,%s,%s,%s)",
+                    (username, email, password, role, name, True)
+                )
+            except Exception:
+                cursor.execute(
+                    "INSERT INTO users (username, email, password, role) VALUES (%s,%s,%s,%s)",
+                    (username, email, password, role)
+                )
             db.commit()
             user_id = cursor.lastrowid
 
@@ -188,6 +219,8 @@ def google_auth():
             except Exception:
                 pass
 
+            cursor.close()
+            db.close()
             return jsonify({
                 "success": True,
                 "message": "User registered via Google",
@@ -195,12 +228,15 @@ def google_auth():
                     "id": user_id,
                     "username": username,
                     "role": role,
-                    "name": name
+                    "name": name or username,
+                    "email": email
                 }
             })
 
     except Exception as e:
         print(f"Auth Error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
 
 # ---------------- PASSWORD RESET ----------------
