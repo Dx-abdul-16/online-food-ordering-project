@@ -25,7 +25,7 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": ["https://food-express-dxac.up.railway.app", "http://localhost:5173", "http://localhost:8080"]}}, supports_credentials=True)
 app.register_blueprint(admin_bp,      url_prefix="/api/admin")
 app.register_blueprint(auth_bp,       url_prefix="/api/auth")
 app.register_blueprint(restaurant_bp, url_prefix="/api/restaurants")
@@ -49,4 +49,5 @@ def debug_route():
     except Exception as e:
         return {"error": str(e)}
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
