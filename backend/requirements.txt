@@ -1,5 +1,6 @@
 flask
 mysql-connector-python
+PyMySQL
 flask-cors
 firebase-admin
 requests

@@ -16,6 +16,7 @@ import RestaurantDetails from "./pages/RestaurantDetails";
 import Restaurants from "./pages/Restaurants";
 import OrderTracking from "./pages/OrderTracking";
 import About from "./pages/About";
+import OnlineFoodOrdering from "./pages/OnlineFoodOrdering";
 import { CartProvider } from "./context/CartContext";
 import { Cart } from "./components/cart/Cart";
 import Checkout from "./pages/Checkout";
@@ -57,6 +58,8 @@ const App = () => (
             </Route>
 
             {/* Public Routes */}
+            <Route path="/online-food-ordering" element={<OnlineFoodOrdering />} />
+            <Route path="/delivery-app" element={<OnlineFoodOrdering />} />
             <Route path="/restaurants" element={<Restaurants />} />
             <Route path="/restaurant/:id" element={<RestaurantDetails />} />
             <Route path="/track-order" element={<OrderTracking />} />

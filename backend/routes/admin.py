@@ -226,6 +226,21 @@ def add_restaurant():
 def get_tickets():
     db = get_db()
     cursor = db.cursor(dictionary=True)
+    
+    # Ensure table exists
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS support_tickets (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            subject VARCHAR(255) NOT NULL,
+            message TEXT NOT NULL,
+            status ENUM('open', 'resolved') DEFAULT 'open',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+    """)
+    db.commit()
+
     cursor.execute("""
         SELECT t.id, t.subject, t.message, t.status, t.created_at, u.name as user_name, u.email as user_email
         FROM support_tickets t

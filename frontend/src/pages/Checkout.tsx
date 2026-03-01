@@ -84,9 +84,8 @@ export default function Checkout() {
   const [detecting, setDetecting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [placing, setPlacing] = useState(false);
-  const [fulfillmentMode, setFulfillmentMode] = useState<'delivery' | 'takeaway'>('delivery');
 
-  const deliveryFee = (fulfillmentMode === 'takeaway' || total >= 299) ? 0 : 40;
+  const deliveryFee = total >= 299 ? 0 : 40;
   const grandTotal  = total + deliveryFee;
 
   // ── Load user ────────────────────────────────────────────────────────────
@@ -115,7 +114,9 @@ export default function Checkout() {
         toast.success("📍 Location detected!");
       },
       () => {
-        toast.error("Could not get your location. Please enter manually.");
+        toast.error("GPS blocked by browser. Please enter your address manually.", {
+            style: { border: "1px solid #e23744" }
+        });
         setDetecting(false);
       },
       { timeout: 10000 }
@@ -169,7 +170,6 @@ export default function Checkout() {
         paymentMethod,
         paymentId:    paymentId, // Razorpay ID if online
         address,
-        fulfillmentMode,
         latitude:     coords[0],
         longitude:    coords[1],
       });
@@ -191,7 +191,7 @@ export default function Checkout() {
 
   // ── Initiate Checkout ────────────────────────────────────────────────────
   const handleCheckout = async () => {
-    if (fulfillmentMode === 'delivery' && !address.trim()) {
+    if (!address.trim()) {
       toast.error("Please enter or detect your delivery address");
       return;
     }
@@ -243,42 +243,17 @@ export default function Checkout() {
         <div className="grid gap-6 lg:grid-cols-5">
           {/* ───── LEFT: Address + Map + Payment ───── */}
           <div className="lg:col-span-3 space-y-5">
-            {/* Fulfillment Mode */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              {[
-                { id: 'delivery', label: 'Delivery', icon: Truck },
-                { id: 'takeaway', label: 'Takeaway', icon: ShoppingBag }
-              ].map((mode) => (
-                <button
-                  key={mode.id}
-                  onClick={() => setFulfillmentMode(mode.id as any)}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${
-                    fulfillmentMode === mode.id 
-                    ? 'border-[#c9a84c] bg-[#c9a84c]/10' 
-                    : 'border-[#1e1e1e] bg-transparent text-gray-500'
-                  }`}
-                >
-                  <mode.icon className={`h-6 w-6 mb-2 ${fulfillmentMode === mode.id ? 'text-[#c9a84c]' : ''}`} />
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${fulfillmentMode === mode.id ? 'text-white' : ''}`}>
-                    {mode.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {fulfillmentMode === 'delivery' && (
-              <>
-                {/* Delivery Address Card */}
-                <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] overflow-hidden">
+            {/* Delivery Address Card */}
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e1e1e]">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-[#c9a84c]" />
+                  <MapPin className="h-4 w-4 text-[#00ADB5]" />
                   <span className="font-bold text-white text-sm">Delivery Address</span>
                 </div>
                 <button
                   onClick={detectLocation}
                   disabled={detecting}
-                  className="flex items-center gap-1.5 rounded-full border border-[#c9a84c]/30 bg-[#c9a84c]/10 px-3 py-1.5 text-xs font-bold text-[#c9a84c] hover:bg-[#c9a84c]/20 transition-all disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-full border border-[#00ADB5]/30 bg-[#00ADB5]/10 px-3 py-1.5 text-xs font-bold text-[#00ADB5] hover:bg-[#00ADB5]/20 transition-all disabled:opacity-60"
                 >
                   {detecting ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -295,14 +270,14 @@ export default function Checkout() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Type your full delivery address, or click 'Use My Location' or drag the pin on the map below…"
-                  className="w-full resize-none rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-[#c9a84c]/50 focus:outline-none transition-colors leading-relaxed"
+                  className="w-full resize-none rounded-xl border border-[#2a2a2a] bg-[#0d0d0d] px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:border-[#00ADB5]/50 focus:outline-none transition-colors leading-relaxed"
                 />
               </div>
 
               {/* ── Map (lazy + error-boundary protected) ── */}
               <div className="px-5 pb-5">
                 <p className="text-[10px] text-gray-600 mb-2 flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-[#c9a84c]" />
+                  <MapPin className="h-3 w-3 text-[#00ADB5]" />
                   Drag the pin or click on the map to set your exact delivery location
                 </p>
                 <div className="overflow-hidden rounded-xl border border-[#2a2a2a]" style={{ height: 280 }}>
@@ -310,7 +285,7 @@ export default function Checkout() {
                     <Suspense
                       fallback={
                         <div className="flex h-full items-center justify-center bg-[#0d0d0d]">
-                          <Loader2 className="h-6 w-6 animate-spin text-[#c9a84c]" />
+                          <Loader2 className="h-6 w-6 animate-spin text-[#00ADB5]" />
                         </div>
                       }
                     >
@@ -327,8 +302,6 @@ export default function Checkout() {
                 </p>
               </div>
             </div>
-            </>
-            )}
 
             {/* Payment Method */}
             <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-5">
@@ -399,11 +372,11 @@ export default function Checkout() {
                   <div className="flex justify-between text-gray-400">
                     <span>Delivery Fee</span>
                     <span className={deliveryFee === 0 ? "text-green-400 font-bold" : "text-white"}>
-                      {fulfillmentMode === 'takeaway' ? "TAKEOWAY" : (deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee}`)}
+                      {deliveryFee === 0 ? "FREE 🎉" : `₹${deliveryFee}`}
                     </span>
                   </div>
-                  {deliveryFee > 0 && fulfillmentMode === 'delivery' && (
-                    <p className="text-[10px] text-[#c9a84c]">
+                  {deliveryFee > 0 && (
+                    <p className="text-[10px] text-[#00ADB5]">
                       Add ₹{(299 - total).toFixed(0)} more to get FREE delivery!
                     </p>
                   )}

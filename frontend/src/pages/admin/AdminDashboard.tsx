@@ -464,7 +464,11 @@ const AdminDashboard = () => {
                                         <MapPin className="h-3 w-3 text-[#c9a84c]" /> {r.location}
                                       </div>
                                       <div className="flex gap-2">
-                                        <Button variant="outline" className="flex-1 border-[#2a2a2a] text-white hover:bg-white/5 rounded-xl h-10 px-0 font-bold text-xs gap-2">
+                                        <Button 
+                                            variant="outline" 
+                                            className="flex-1 border-[#2a2a2a] text-white hover:bg-white/5 rounded-xl h-10 px-0 font-bold text-xs gap-2"
+                                            onClick={() => navigate(`/restaurant/${r.id}`)}
+                                        >
                                             <ExternalLink className="h-3.3 w-3.3" /> VIEW
                                         </Button>
                                         <Button variant="destructive" className="h-10 w-10 p-0 rounded-xl" onClick={() => deleteRestaurant(r.id)}>

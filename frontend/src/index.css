@@ -480,3 +480,192 @@ aside {
   background: linear-gradient(90deg, #eee 25%, #ddd 50%, #eee 75%) !important;
   background-size: 200% 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*                 MASS THEME OVERRIDE (SPACE TEAL)                            */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* HSL Updates for Primary (Teal) */
+:root {
+  --primary: 184 100% 35%;
+  --ring: 184 100% 35%;
+}
+
+.dark {
+  --background: 216 18% 16%; /* #222831 */
+  --card: 218 10% 25%; /* #393E46 */
+  --popover: 218 10% 25%;
+  --muted: 218 10% 30%;
+  --border: 218 10% 35%;
+  --input: 218 10% 30%;
+  --primary: 184 100% 35%; /* #00ADB5 */
+  --ring: 184 100% 35%;
+}
+
+/* OVERRIDE GLOBAL HARDCODED TAILWIND CLASSES FOR DARK MODE */
+
+body {
+  background-color: #222831 !important;
+  color: #EEEEEE !important;
+}
+
+/* Replace Gold (#c9a84c) with Teal (#00ADB5) */
+.text-\[\#c9a84c\] {
+  color: #00ADB5 !important;
+}
+.bg-\[\#c9a84c\] {
+  background-color: #00ADB5 !important;
+}
+.border-\[\#c9a84c\] {
+  border-color: #00ADB5 !important;
+}
+.fill-\[\#c9a84c\] {
+  fill: #00ADB5 !important;
+}
+.hover\:text-\[\#c9a84c\]:hover {
+  color: #00ADB5 !important;
+}
+.hover\:bg-\[\#c9a84c\]:hover {
+  background-color: #00ADB5 !important;
+}
+.hover\:border-\[\#c9a84c\]:hover {
+  border-color: #00ADB5 !important;
+}
+.focus\:border-\[\#c9a84c\]:focus {
+  border-color: #00ADB5 !important;
+}
+
+/* Replace Hover Gold (#b8943d) with Darker Teal (#008a91) */
+.hover\:bg-\[\#b8943d\]:hover {
+  background-color: #008a91 !important;
+}
+
+/* Translucent Colors Map to Teal */
+.bg-\[\#c9a84c\]\/10 {
+  background-color: rgba(0, 173, 181, 0.1) !important;
+}
+.bg-\[\#c9a84c\]\/20 {
+  background-color: rgba(0, 173, 181, 0.2) !important;
+}
+.border-\[\#c9a84c\]\/20 {
+  border-color: rgba(0, 173, 181, 0.2) !important;
+}
+.border-\[\#c9a84c\]\/30 {
+  border-color: rgba(0, 173, 181, 0.3) !important;
+}
+.border-\[\#c9a84c\]\/50 {
+  border-color: rgba(0, 173, 181, 0.5) !important;
+}
+.hover\:border-\[\#c9a84c\]\/30:hover {
+  border-color: rgba(0, 173, 181, 0.3) !important;
+}
+.hover\:border-\[\#c9a84c\]\/50:hover {
+  border-color: rgba(0, 173, 181, 0.5) !important;
+}
+.shadow-\[\#c9a84c\]\/10 {
+  box-shadow: 0 4px 14px 0 rgba(0, 173, 181, 0.1) !important;
+}
+.shadow-\[\#c9a84c\]\/20 {
+  box-shadow: 0 4px 14px 0 rgba(0, 173, 181, 0.2) !important;
+}
+
+/* Replace Dark Backgrounds (#0d0d0d) with Space Dark (#222831) */
+.bg-\[\#0d0d0d\],
+.bg-\[\#0a0a0a\],
+.bg-\[\#080808\] {
+  background-color: #222831 !important;
+}
+
+/* Replace Intermediary Dark Backgrounds (#111111, #141414) with Secondary Space Dark (#393E46) */
+.bg-\[\#111111\],
+.bg-\[\#111\],
+.bg-\[\#141414\] {
+  background-color: #393E46 !important;
+}
+
+/* Replace Lighter Dark Backgrounds (#1a1a1a) with slightly lighter Space Dark (#424a54) */
+.bg-\[\#1a1a1a\] {
+  background-color: #424a54 !important;
+}
+
+/* Replace Borders (#2a2a2a) with Bright Space contrast (#545a64) */
+.border-\[\#2a2a2a\],
+.border-\[\#1e1e1e\] {
+  border-color: #545a64 !important;
+}
+.from-\[\#0d0d0d\] {
+  --tw-gradient-from: #222831 var(--tw-gradient-from-position) !important;
+}
+.via-\[\#0d0d0d\] {
+  --tw-gradient-via: #222831 var(--tw-gradient-via-position) !important;
+}
+.to-\[\#0d0d0d\] {
+  --tw-gradient-to: #222831 var(--tw-gradient-to-position) !important;
+}
+
+/* Fix generic text-white across dark mode to use #EEEEEE */
+.text-white {
+  color: #FFFFFF !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/*                 MASS THEME OVERRIDE (LIGHT MODE SPECIFIC)                   */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Light mode overrides for the Space Teal theme */
+.light-mode {
+  --primary: 184 100% 35%; /* Teal */
+}
+
+/* Apply light background */
+.light-mode body {
+  background-color: #EEEEEE !important;
+  color: #222831 !important;
+}
+
+/* Map darkest backgrounds to #EEEEEE in Light Mode */
+.light-mode .bg-\[\#0d0d0d\],
+.light-mode .bg-\[\#0a0a0a\] {
+  background-color: #EEEEEE !important;
+}
+
+/* Map cards to pure White */
+.light-mode .bg-\[\#111111\],
+.light-mode .bg-\[\#141414\],
+.light-mode .bg-\[\#1a1a1a\] {
+  background-color: #ffffff !important;
+}
+
+/* Map text colors */
+.light-mode .text-white {
+  color: #222831 !important;
+}
+.light-mode .text-gray-400 {
+  color: #555555 !important;
+}
+.light-mode .text-gray-500 {
+  color: #444444 !important;
+}
+.light-mode .text-gray-600 {
+  color: #222831 !important;
+}
+
+/* Map borders to a slightly darker gray */
+.light-mode .border-\[\#2a2a2a\],
+.light-mode .border-\[\#1e1e1e\] {
+  border-color: #cccccc !important;
+}
+
+/* Teal application for Light Mode primary */
+.light-mode .text-\[\#c9a84c\] {
+  color: #00ADB5 !important;
+}
+.light-mode .bg-\[\#c9a84c\] {
+  background-color: #00ADB5 !important;
+}
+.light-mode .hover\:bg-\[\#b8943d\]:hover {
+  background-color: #008a91 !important;
+}
+.light-mode .border-\[\#c9a84c\] {
+  border-color: #00ADB5 !important;
+}

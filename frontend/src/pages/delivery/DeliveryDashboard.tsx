@@ -64,15 +64,39 @@ const DeliveryDashboard = () => {
     };
 
     const handleGoOnline = async () => {
-        if (!driverLoc) {
-            toast.error("Cannot get your location. Please enable GPS.");
-            return;
+        let loc = driverLoc;
+
+        if (!loc) {
+            toast.info("Acquiring GPS location...", { duration: 2000 });
+            try {
+                loc = await new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject(new Error("Geolocation not supported"));
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        (err) => reject(err),
+                        { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                });
+                if (loc) setDriverLoc(loc);
+            } catch (err: any) {
+                if (err.code === 1) {
+                    toast.error("Location permission denied. Please allow location access in your browser.");
+                } else {
+                    toast.error("Could not get GPS location. Please check your device settings.");
+                }
+                return;
+            }
         }
+
+        if (!loc) return; // type safety check
+
         try {
             await api.post("/delivery/go-online", {
                 partnerId: user.id,
-                latitude: driverLoc.lat,
-                longitude: driverLoc.lng
+                latitude: loc.lat,
+                longitude: loc.lng
             });
             setIsOnline(true);
             toast.success("You are now ONLINE! Ready for deliveries.");

@@ -421,6 +421,16 @@ const Header = () => {
     catch { return null; }
   })();
 
+  const getDashboardLink = () => {
+    if (!user) return "/login";
+    switch(user.role) {
+      case "admin": return "/admin/dashboard";
+      case "hotel": return "/restaurant/dashboard";
+      case "delivery": return "/delivery/dashboard";
+      default: return "/user/dashboard";
+    }
+  };
+
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
@@ -503,8 +513,8 @@ const Header = () => {
           {/* Auth */}
           {user ? (
             <div className="hidden sm:flex items-center gap-2">
-              <Link to="/user/dashboard">
-                <Button size="sm" className="gap-2 bg-[#c9a84c] hover:bg-[#b8943d] text-black font-semibold">
+              <Link to={getDashboardLink()}>
+                <Button size="sm" className="gap-2 bg-[#00ADB5] hover:bg-[#008a91] text-[#222831] font-semibold">
                   <User className="h-4 w-4" />
                   {user.username || "User"}
                 </Button>
@@ -561,8 +571,8 @@ const Header = () => {
                 <div className="my-4 h-px bg-[#c9a84c]/10" />
                 {user ? (
                   <>
-                    <Link to="/user/dashboard" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full bg-[#c9a84c] hover:bg-[#b8943d] text-black font-bold">
+                    <Link to={getDashboardLink()} onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-[#00ADB5] hover:bg-[#008a91] text-[#222831] font-bold">
                         <User className="mr-2 h-4 w-4" /> {user.username}
                       </Button>
                     </Link>

@@ -1,12 +1,29 @@
-import mysql.connector
 import os
+import pymysql
+import pymysql.cursors
+
+class PyMySQLWrapper:
+    def __init__(self, conn):
+        self._conn = conn
+        
+    def cursor(self, dictionary=False, **kwargs):
+        if dictionary:
+            return self._conn.cursor(cursor=pymysql.cursors.DictCursor)
+        return self._conn.cursor()
+        
+    def commit(self):
+        return self._conn.commit()
+        
+    def close(self):
+        return self._conn.close()
 
 def get_db():
-    return mysql.connector.connect(
-        host=os.getenv("MYSQLHOST", "caboose.proxy.rlwy.net"),
-        user=os.getenv("MYSQLUSER", "root"),
-        password=os.getenv("MYSQLPASSWORD", "CAUtybWeBlZZbEyjgbNhllfQqyUfjASN"),
-        database=os.getenv("MYSQLDATABASE", "railway"),
-        port=int(os.getenv("MYSQLPORT", "47013")),
-        use_pure=True 
+    conn = pymysql.connect(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 12412)),
+        ssl={"ssl": {}}
     )
+    return PyMySQLWrapper(conn)
