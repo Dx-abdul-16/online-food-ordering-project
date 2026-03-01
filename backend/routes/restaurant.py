@@ -3,7 +3,8 @@ from db import get_db
 
 restaurant_bp = Blueprint("restaurant", __name__)
 
-@restaurant_bp.route("/", methods=["GET"])
+@restaurant_bp.route("", methods=["GET"], strict_slashes=False)
+@restaurant_bp.route("/", methods=["GET"], strict_slashes=False)
 def get_restaurants():
     try:
         db = get_db()
