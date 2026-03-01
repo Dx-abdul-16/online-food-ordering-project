@@ -10,7 +10,8 @@ import {
   Trash2, CheckCircle, XCircle, Store, Truck, 
   MessageSquare, Plus, ShoppingBag, Users, 
   TrendingUp, LogOut, ExternalLink, ShieldCheck,
-  Loader2, AlertCircle, MapPin
+  Loader2, AlertCircle, MapPin, Navigation, Eye,
+  FileText, Mail
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import Header from "@/components/layout/Header";
+import MapView from "@/components/MapView";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -32,6 +34,8 @@ const AdminDashboard = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [livePartners, setLivePartners] = useState<any[]>([]);
+    const [selectedPartner, setSelectedPartner] = useState<any>(null);
     
     // New Restaurant Form State
     const [newRest, setNewRest] = useState({ name: "", cuisine: "", location: "", image: "" });
@@ -60,24 +64,42 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchLiveTracking = async () => {
+        try {
+            const res = await api.get('/admin/live-tracking');
+            if (res.success) {
+                setLivePartners(res.partners);
+            }
+        } catch (e) {
+            console.error("Failed to fetch live tracking", e);
+        }
+    };
+
     useEffect(() => {
         fetchData();
+    }, []);
+
+    // Auto-refresh live tracking every 5 seconds
+    useEffect(() => {
+        fetchLiveTracking();
+        const timer = setInterval(fetchLiveTracking, 5000);
+        return () => clearInterval(timer);
     }, []);
 
     // --- PARTNER ACTIONS ---
     const approvePartner = async (id: number) => {
         try {
             await api.post(`/admin/approve-partner/${id}`, {});
-            toast.success("Partner approved");
+            toast.success("Partner approved! Email notification sent.");
             fetchData();
         } catch (e) { toast.error("Action failed"); }
     };
 
     const denyPartner = async (id: number) => {
-        if (!confirm("Deny and remove this partner?")) return;
+        if (!confirm("Deny and remove this partner? An email will be sent.")) return;
         try {
             await api.delete(`/admin/deny-partner/${id}`);
-            toast.success("Partner removed");
+            toast.success("Partner removed. Denial email sent.");
             fetchData();
         } catch (e) { toast.error("Action failed"); }
     };
@@ -121,6 +143,9 @@ const AdminDashboard = () => {
       </div>
     );
 
+    const onlinePartners = livePartners.filter(p => p.is_online);
+    const offlinePartners = livePartners.filter(p => !p.is_online);
+
     return (
         <div className="min-h-screen bg-[#0d0d0d] pb-20 text-white font-sans">
             <Header />
@@ -150,10 +175,10 @@ const AdminDashboard = () => {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                   {[
-                    { label: "Total Revenue", value: `₹${stats?.revenue.toLocaleString()}`, icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
+                    { label: "Total Revenue", value: `₹${stats?.revenue?.toLocaleString() || 0}`, icon: TrendingUp, color: "text-green-500", bg: "bg-green-500/10" },
                     { label: "Active Orders", value: stats?.orders, icon: ShoppingBag, color: "text-[#c9a84c]", bg: "bg-[#c9a84c]/10" },
                     { label: "Elite Users", value: stats?.users, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-                    { label: "Restaurants", value: stats?.restaurants, icon: Store, color: "text-purple-500", bg: "bg-purple-500/10" },
+                    { label: "Online Riders", value: `${stats?.online_partners || 0}/${stats?.delivery_partners || 0}`, icon: Truck, color: "text-purple-500", bg: "bg-purple-500/10" },
                   ].map((s, i) => (
                     <Card key={i} className="bg-[#111111] border-[#2a2a2a] overflow-hidden group hover:border-[#c9a84c]/30 transition-all">
                       <CardContent className="p-6">
@@ -171,11 +196,17 @@ const AdminDashboard = () => {
                   ))}
               </div>
 
-              <Tabs defaultValue="partners" className="w-full">
+              <Tabs defaultValue="tracking" className="w-full">
                   <TabsList className="bg-[#111111] p-1 border border-[#2a2a2a] rounded-2xl h-auto mb-8 flex flex-wrap justify-start">
+                      <TabsTrigger value="tracking" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-[#c9a84c] data-[state=active]:text-black font-bold flex gap-2">
+                          <Navigation className="h-4 w-4" /> Live Tracking
+                          <span className="bg-green-500/20 text-green-500 rounded-md px-1.5 py-0.5 text-[10px] font-black">
+                            {onlinePartners.length}
+                          </span>
+                      </TabsTrigger>
                       <TabsTrigger value="partners" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-[#c9a84c] data-[state=active]:text-black font-bold flex gap-2">
                           <Truck className="h-4 w-4" /> Partners
-                          <span className="bg-[#c9a84c]/20 text-[#c9a84c] rounded-md px-1.5 py-0.5 text-[10px] font-black group-data-[state=active]:bg-black/20 group-data-[state=active]:text-black">
+                          <span className="bg-[#c9a84c]/20 text-[#c9a84c] rounded-md px-1.5 py-0.5 text-[10px] font-black">
                             {partners.filter(p => !p.is_approved).length}
                           </span>
                       </TabsTrigger>
@@ -187,18 +218,117 @@ const AdminDashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger value="support" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-[#c9a84c] data-[state=active]:text-black font-bold flex gap-2">
                           <MessageSquare className="h-4 w-4" /> Support
-                          <span className="bg-[#c9a84c]/20 text-[#c9a84c] rounded-md px-1.5 py-0.5 text-[10px] font-black group-data-[state=active]:bg-black/20 group-data-[state=active]:text-black">
+                          <span className="bg-[#c9a84c]/20 text-[#c9a84c] rounded-md px-1.5 py-0.5 text-[10px] font-black">
                              {tickets.filter(t => t.status === 'open').length}
                           </span>
                       </TabsTrigger>
                   </TabsList>
+
+                  {/* === LIVE TRACKING TAB === */}
+                  <TabsContent value="tracking">
+                      <div className="grid gap-6 lg:grid-cols-3">
+                          {/* Map - Full width on mobile, 2/3 on desktop */}
+                          <div className="lg:col-span-2">
+                              <Card className="bg-[#111111] border-[#2a2a2a] rounded-3xl overflow-hidden shadow-2xl">
+                                  <CardHeader className="border-b border-[#1e1e1e] p-4">
+                                      <div className="flex items-center justify-between">
+                                          <div>
+                                              <CardTitle className="text-xl font-black flex items-center gap-2">
+                                                  <Navigation className="h-5 w-5 text-[#c9a84c] animate-pulse" />
+                                                  Live Fleet Map
+                                              </CardTitle>
+                                              <CardDescription className="text-gray-500">
+                                                  All delivery partner locations in real-time
+                                              </CardDescription>
+                                          </div>
+                                          <Badge className="bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg py-1 px-3 animate-pulse">
+                                              {onlinePartners.length} ONLINE
+                                          </Badge>
+                                      </div>
+                                  </CardHeader>
+                                  <CardContent className="p-0">
+                                      <div className="w-full h-[500px]">
+                                          <MapView
+                                              height="100%"
+                                              width="100%"
+                                              zoom={12}
+                                              center={onlinePartners.length > 0 
+                                                  ? [onlinePartners[0].live_latitude, onlinePartners[0].live_longitude] 
+                                                  : [11.0168, 76.9558]}
+                                              popupText="Delivery Fleet"
+                                          />
+                                      </div>
+                                  </CardContent>
+                              </Card>
+                          </div>
+
+                          {/* Partners List */}
+                          <div className="space-y-4">
+                              <h3 className="text-lg font-black flex items-center gap-2">
+                                  <Eye className="h-5 w-5 text-[#c9a84c]" />
+                                  Fleet Status ({livePartners.length})
+                              </h3>
+
+                              {/* Online Partners */}
+                              {onlinePartners.map(p => (
+                                  <Card key={p.id} className="bg-[#111111] border-green-500/20 rounded-2xl overflow-hidden hover:border-green-500/50 transition-all cursor-pointer"
+                                      onClick={() => setSelectedPartner(p)}>
+                                      <CardContent className="p-4">
+                                          <div className="flex items-center gap-3">
+                                              <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                                                  <Truck className="h-5 w-5 text-green-500" />
+                                              </div>
+                                              <div className="flex-1">
+                                                  <p className="font-bold text-white text-sm">{p.name || `Partner #${p.id}`}</p>
+                                                  <p className="text-[10px] text-gray-500">{p.email}</p>
+                                              </div>
+                                              <div className="text-right">
+                                                  <Badge className="bg-green-500/10 text-green-500 text-[9px] font-black">ONLINE</Badge>
+                                                  <p className="text-[9px] text-gray-600 mt-1 font-mono">
+                                                      {p.live_latitude?.toFixed(4)}, {p.live_longitude?.toFixed(4)}
+                                                  </p>
+                                              </div>
+                                          </div>
+                                      </CardContent>
+                                  </Card>
+                              ))}
+
+                              {/* Offline Partners */}
+                              {offlinePartners.map(p => (
+                                  <Card key={p.id} className="bg-[#111111] border-[#2a2a2a] rounded-2xl overflow-hidden opacity-50">
+                                      <CardContent className="p-4">
+                                          <div className="flex items-center gap-3">
+                                              <div className="h-10 w-10 rounded-full bg-gray-500/10 flex items-center justify-center">
+                                                  <Truck className="h-5 w-5 text-gray-500" />
+                                              </div>
+                                              <div className="flex-1">
+                                                  <p className="font-bold text-gray-400 text-sm">{p.name || `Partner #${p.id}`}</p>
+                                                  <p className="text-[10px] text-gray-600">{p.email}</p>
+                                              </div>
+                                              <Badge className="bg-gray-500/10 text-gray-500 text-[9px] font-black">OFFLINE</Badge>
+                                          </div>
+                                      </CardContent>
+                                  </Card>
+                              ))}
+
+                              {livePartners.length === 0 && (
+                                  <div className="p-8 text-center text-gray-500 border border-[#2a2a2a] rounded-2xl">
+                                      <Truck className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                                      <p className="font-bold">No delivery partners with location data</p>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+                  </TabsContent>
 
                   {/* --- DELIVERY PARTNERS TAB --- */}
                   <TabsContent value="partners">
                       <Card className="bg-[#111111] border-[#2a2a2a] text-white rounded-3xl overflow-hidden shadow-2xl">
                           <CardHeader className="border-b border-[#1e1e1e] p-6">
                               <CardTitle className="text-xl font-black">Partner Onboarding</CardTitle>
-                              <CardDescription className="text-gray-500 font-medium">Verify and activate new delivery partners.</CardDescription>
+                              <CardDescription className="text-gray-500 font-medium">
+                                  Verify driving licenses and activate new delivery partners. Approval/denial emails are sent automatically.
+                              </CardDescription>
                           </CardHeader>
                           <CardContent className="p-0">
                               <Table>
@@ -206,22 +336,41 @@ const AdminDashboard = () => {
                                       <TableRow className="border-[#1e1e1e] hover:bg-transparent">
                                           <TableHead className="text-gray-500 font-bold px-6">PARTNER</TableHead>
                                           <TableHead className="text-gray-500 font-bold">CONTACT</TableHead>
+                                          <TableHead className="text-gray-500 font-bold">LICENSE</TableHead>
                                           <TableHead className="text-gray-500 font-bold">STATUS</TableHead>
                                           <TableHead className="text-gray-500 font-bold text-right px-6">ACTIONS</TableHead>
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
                                       {partners.length === 0 ? (
-                                        <TableRow><TableCell colSpan={4} className="h-32 text-center text-gray-500">No partners found.</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={5} className="h-32 text-center text-gray-500">No partners found.</TableCell></TableRow>
                                       ) : partners.map((partner) => (
                                           <TableRow key={partner.id} className="border-[#1e1e1e] hover:bg-white/[0.02] transition-colors">
                                               <TableCell className="px-6">
                                                 <div className="font-bold text-white">{partner.name}</div>
                                                 <div className="text-[10px] text-gray-500 uppercase tracking-tighter">ID: #DP-000{partner.id}</div>
+                                                {partner.is_online && (
+                                                    <Badge className="bg-green-500/10 text-green-500 text-[8px] mt-1">● ONLINE</Badge>
+                                                )}
                                               </TableCell>
                                               <TableCell>
                                                 <div className="text-sm text-gray-300">{partner.email}</div>
                                                 <div className="text-xs text-gray-600">{partner.phone || 'No phone'}</div>
+                                              </TableCell>
+                                              <TableCell>
+                                                {partner.driving_license ? (
+                                                    <div>
+                                                        <div className="flex items-center gap-1 text-xs text-blue-400">
+                                                            <FileText className="h-3 w-3" />
+                                                            {partner.driving_license}
+                                                        </div>
+                                                        {partner.driving_license_image && (
+                                                            <a href={partner.driving_license_image} target="_blank" className="text-[9px] text-[#c9a84c] hover:underline">View Image</a>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[10px] text-red-500 font-bold">NO LICENSE</span>
+                                                )}
                                               </TableCell>
                                               <TableCell>
                                                   {partner.is_approved ? (
@@ -233,12 +382,14 @@ const AdminDashboard = () => {
                                               <TableCell className="text-right px-6">
                                                   <div className="flex justify-end gap-2">
                                                       {!partner.is_approved && (
-                                                          <Button size="sm" className="bg-[#c9a84c] text-black hover:bg-[#b8943d] h-9 w-9 p-0 rounded-xl" onClick={() => approvePartner(partner.id)}>
-                                                              <CheckCircle className="h-5 w-5" />
+                                                          <Button size="sm" className="bg-[#c9a84c] text-black hover:bg-[#b8943d] h-9 px-3 rounded-xl flex gap-1 items-center" onClick={() => approvePartner(partner.id)}>
+                                                              <CheckCircle className="h-4 w-4" />
+                                                              <Mail className="h-3 w-3" />
                                                           </Button>
                                                       )}
-                                                      <Button size="sm" variant="destructive" className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white h-9 w-9 p-0 rounded-xl border border-red-500/20" onClick={() => denyPartner(partner.id)}>
-                                                          <XCircle className="h-5 w-5" />
+                                                      <Button size="sm" variant="destructive" className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white h-9 px-3 rounded-xl border border-red-500/20 flex gap-1 items-center" onClick={() => denyPartner(partner.id)}>
+                                                          <XCircle className="h-4 w-4" />
+                                                          <Mail className="h-3 w-3" />
                                                       </Button>
                                                   </div>
                                               </TableCell>
@@ -282,7 +433,7 @@ const AdminDashboard = () => {
                                       </div>
                                       <div className="space-y-2">
                                           <Label className="text-[10px] font-black uppercase text-gray-500 ml-1">Store Location</Label>
-                                          <Input value={newRest.location} onChange={(e) => setNewRest({...newRest, location: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] text-white h-12 rounded-xl focus:border-[#c9a84c]" placeholder="e.g. Saravanampatti, Coimbatore, TN" />
+                                          <Input value={newRest.location} onChange={(e) => setNewRest({...newRest, location: e.target.value})} className="bg-[#0d0d0d] border-[#2a2a2a] text-white h-12 rounded-xl focus:border-[#c9a84c]" placeholder="e.g. Saravanampatti, Coimbatore" />
                                       </div>
                                       <div className="space-y-2">
                                           <Label className="text-[10px] font-black uppercase text-gray-500 ml-1">Image URL</Label>
@@ -291,7 +442,7 @@ const AdminDashboard = () => {
                                       <Button onClick={addRestaurant} className="w-full bg-[#c9a84c] text-black hover:bg-[#b8943d] h-14 rounded-2xl font-black text-lg shadow-xl shadow-[#c9a84c]/10">SAVE RESTAURANT</Button>
                                   </div>
                               </DialogContent>
-                          </Dialog>
+                           </Dialog>
                       </div>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                           {restaurants.map(r => (
@@ -368,7 +519,7 @@ const AdminDashboard = () => {
                                               <TableCell>
                                                 <div className="font-bold text-white text-sm">{o.user_name}</div>
                                                 <Badge className={`px-1.5 py-0 rounded text-[9px] mt-1 font-black ${o.status === 'pending' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
-                                                  {o.status.toUpperCase()}
+                                                  {o.status?.toUpperCase()}
                                                 </Badge>
                                               </TableCell>
                                               <TableCell>
@@ -418,10 +569,10 @@ const AdminDashboard = () => {
                                               <TableCell className="px-6 text-right">
                                                   {t.status === 'open' ? (
                                                        <Button size="sm" className="bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white rounded-xl h-9 px-4 font-black transition-all" onClick={async () => {
-                                                           await api.post(`/admin/support/resolve/${t.id}`, {});
-                                                           toast.success("Ticket resolved");
-                                                           fetchData();
-                                                       }}>
+                                                            await api.post(`/admin/support/resolve/${t.id}`, {});
+                                                            toast.success("Ticket resolved");
+                                                            fetchData();
+                                                        }}>
                                                           RESOLVE
                                                       </Button>
                                                   ) : (

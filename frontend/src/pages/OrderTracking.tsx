@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, CheckCircle2, ChefHat, Bike, Package, Phone } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, CheckCircle2, ChefHat, Bike, Package, Phone, QrCode, Scan, ShieldCheck, AlertCircle, Truck } from "lucide-react";
 import { api } from "@/lib/api";
 import Header from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 // We lazy-import MapView to avoid SSR issues with Leaflet
 import MapView from "@/components/MapView";
+import QRCodeDisplay from "@/components/QRCodeDisplay";
+import QRScanner from "@/components/QRScanner";
 
 // ─── Order status steps ───────────────────────────────────────────────────────
 const STATUS_STEPS = [
@@ -41,6 +46,10 @@ const OrderTracking = () => {
   const [deliveryLoc, setDeliveryLoc] = useState(MOCK_DELIVERY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nearbyPartners, setNearbyPartners] = useState<any[]>([]);
+  const [qrData, setQrData] = useState<any>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [confirmStatus, setConfirmStatus] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Fetch order details ────────────────────────────────────────────────────
@@ -85,6 +94,38 @@ const OrderTracking = () => {
     fetchOrder();
   }, [orderId]);
 
+  // ── Fetch QR Data for customer ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!orderId) return;
+    const fetchQr = async () => {
+      try {
+        const res = await api.get(`/delivery/qr/${orderId}`);
+        if (res.success) {
+          setQrData(res);
+          setConfirmStatus(res.customerConfirmed);
+        }
+      } catch {}
+    };
+    fetchQr();
+    const timer = setInterval(fetchQr, 10000);
+    return () => clearInterval(timer);
+  }, [orderId]);
+
+  // ── Fetch nearby delivery partners ──────────────────────────────────────────
+  useEffect(() => {
+    const fetchNearby = async () => {
+      try {
+        const res = await api.get(`/delivery/nearby?lat=${COIMBATORE_CENTER[0]}&lng=${COIMBATORE_CENTER[1]}`);
+        if (res.success) {
+          setNearbyPartners(res.partners);
+        }
+      } catch {}
+    };
+    fetchNearby();
+    const timer = setInterval(fetchNearby, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
   // ── Poll delivery location ─────────────────────────────────────────────────
   useEffect(() => {
     if (!orderId) return;
@@ -117,6 +158,48 @@ const OrderTracking = () => {
     return () => clearInterval(interval);
   }, [orderId]);
 
+  // ── Handle customer QR scan confirmation ────────────────────────────────────
+  const handleCustomerScan = async (code: string) => {
+    setShowScanner(false);
+    if (!orderId) {
+      toast.info("Demo mode - scan feature requires a real order");
+      return;
+    }
+    
+    try {
+      const res = await api.post("/delivery/confirm-delivery", {
+        orderId: parseInt(orderId),
+        qrHash: code,
+        confirmed: true
+      });
+      if (res.success) {
+        toast.success("✅ Order confirmed as received!");
+        setConfirmStatus("received");
+      } else {
+        toast.error(res.message || "Verification failed");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Verification failed");
+    }
+  };
+
+  const handleNotReceived = async () => {
+    if (!orderId || !qrData?.qrHash) return;
+    try {
+      const res = await api.post("/delivery/confirm-delivery", {
+        orderId: parseInt(orderId),
+        qrHash: qrData.qrHash,
+        confirmed: false
+      });
+      if (res.success) {
+        toast.warning("Order marked as NOT received. Support has been notified.");
+        setConfirmStatus("not_received");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to report");
+    }
+  };
+
   // ── Derived values ─────────────────────────────────────────────────────────
   const stepIndex = getStepIndex(order?.status);
   const restaurantCenter: [number, number] = order?.restaurant_lat && order?.restaurant_lng
@@ -147,6 +230,14 @@ const OrderTracking = () => {
   return (
     <div className="min-h-screen bg-[#0d0d0d] pb-20">
       <Header />
+
+      {/* QR Scanner Modal */}
+      {showScanner && (
+        <QRScanner
+          onScan={handleCustomerScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
 
       <div className="container py-8 space-y-6">
         {/* ── Back + Title ── */}
@@ -215,12 +306,95 @@ const OrderTracking = () => {
             <Clock className="h-3.5 w-3.5 text-[#c9a84c]" />
             <span className="text-xs font-bold text-[#c9a84c]">{getETA(order?.status)}</span>
           </div>
+          {/* Nearby partners badge */}
+          {nearbyPartners.length > 0 && (
+            <div className="absolute top-3 right-3 z-[999] flex items-center gap-2 bg-black/80 backdrop-blur rounded-full px-3 py-1.5 border border-green-500/30">
+              <Truck className="h-3.5 w-3.5 text-green-500" />
+              <span className="text-xs font-bold text-green-500">{nearbyPartners.length} partners nearby</span>
+            </div>
+          )}
           <MapView
             trackOrder={trackOrder}
             zoom={14}
             height="380px"
           />
         </div>
+
+        {/* ── QR Delivery Confirmation (Customer) ── */}
+        {qrData && order?.status === "on_the_way" && (
+          <div className="rounded-3xl border-2 border-dashed border-[#c9a84c]/30 bg-[#111111] p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-black text-white flex items-center justify-center gap-2">
+                <QrCode className="h-5 w-5 text-[#c9a84c]" />
+                Delivery QR Code
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Show this to your delivery partner, or scan their QR to confirm
+              </p>
+            </div>
+
+            {confirmStatus === "received" ? (
+              <div className="text-center p-6">
+                <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-3" />
+                <p className="text-green-500 font-black text-lg">ORDER CONFIRMED ✅</p>
+                <p className="text-gray-500 text-xs mt-1">You confirmed receiving this order</p>
+              </div>
+            ) : confirmStatus === "not_received" ? (
+              <div className="text-center p-6">
+                <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-3" />
+                <p className="text-red-500 font-black text-lg">MARKED NOT RECEIVED</p>
+                <p className="text-gray-500 text-xs mt-1">Support has been notified</p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <QRCodeDisplay value={qrData.qrHash} size={160} label="Your Order QR" />
+                <div className="space-y-3 text-center sm:text-left">
+                  <p className="text-sm text-gray-400">
+                    When your delivery arrives, confirm:
+                  </p>
+                  <Button
+                    onClick={() => setShowScanner(true)}
+                    className="bg-[#c9a84c] text-black hover:bg-[#b8943d] rounded-2xl h-12 px-6 font-black w-full flex gap-2"
+                  >
+                    <Scan className="h-4 w-4" /> SCAN & CONFIRM RECEIVED
+                  </Button>
+                  <Button
+                    onClick={handleNotReceived}
+                    variant="outline"
+                    className="border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-2xl h-12 px-6 font-bold w-full flex gap-2"
+                  >
+                    <AlertCircle className="h-4 w-4" /> NOT RECEIVED
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Nearby Delivery Partners ── */}
+        {nearbyPartners.length > 0 && (
+          <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-5">
+            <h3 className="font-black text-white mb-4 flex items-center gap-2">
+              <Truck className="h-4 w-4 text-green-500" /> Nearby Delivery Partners ({nearbyPartners.length})
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {nearbyPartners.slice(0, 6).map((p: any) => (
+                <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-[#0d0d0d] border border-[#1e1e1e]">
+                  <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <Bike className="h-4 w-4 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">{p.name || `Partner #${p.id}`}</p>
+                    <p className="text-[9px] text-gray-500">
+                      {p.live_latitude?.toFixed(3)}, {p.live_longitude?.toFixed(3)}
+                    </p>
+                  </div>
+                  <Badge className="ml-auto bg-green-500/10 text-green-500 text-[8px] px-1.5 py-0.5">ONLINE</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Info cards ── */}
         <div className="grid gap-4 sm:grid-cols-3">
@@ -240,8 +414,8 @@ const OrderTracking = () => {
               <Bike className="h-4 w-4 text-[#fc8019]" />
               <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Delivery Partner</span>
             </div>
-            <div className="text-base font-bold text-white">Ramesh Kumar</div>
-            <div className="text-xs text-gray-500 mt-1">Hero Splendor • TN 38 AB 9921</div>
+            <div className="text-base font-bold text-white">Delivery Fleet</div>
+            <div className="text-xs text-gray-500 mt-1">FoodExpress Verified</div>
             <a
               href="tel:+919629075139"
               className="mt-3 flex items-center gap-1.5 text-xs text-[#c9a84c] hover:underline"

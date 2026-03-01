@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from db import get_db
+from email_service import send_registration_email, send_approval_email
 import requests
 import random
 import string
+import hashlib
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -16,17 +18,45 @@ def signup():
     phone = data.get("phone")
     password = data.get("password")
     role = data.get("role", "user")
+    name = data.get("name", username)
+    driving_license = data.get("drivingLicense", None)
+    driving_license_image = data.get("drivingLicenseImage", None)
+
+    # Validate driving license for delivery partners
+    if role == "delivery":
+        if not driving_license:
+            return jsonify({"success": False, "message": "Driving license number is required for delivery partners"}), 400
+
+    # Delivery and hotel accounts need admin approval
+    is_approved = True if role == "user" else False
 
     db = get_db()
     cursor = db.cursor()
 
     try:
         cursor.execute(
-            "INSERT INTO users (username, email, phone, password, role) VALUES (%s,%s,%s,%s,%s)",
-            (username, email, phone, password, role)
+            """INSERT INTO users (username, email, phone, password, role, name, 
+               driving_license, driving_license_image, is_approved) 
+               VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+            (username, email, phone, password, role, name,
+             driving_license, driving_license_image, is_approved)
         )
         db.commit()
-        return jsonify({"success": True, "message": "User registered"})
+
+        # Send registration email with role mention
+        try:
+            send_registration_email(email, name or username, role)
+        except Exception as mail_err:
+            print(f"Email send failed (non-blocking): {mail_err}")
+
+        if role == "delivery":
+            msg = "Registration submitted! Your account is pending admin approval. You'll receive an email once verified."
+        elif role == "hotel":
+            msg = "Restaurant registration submitted! Pending admin approval."
+        else:
+            msg = "User registered successfully! You can now login."
+
+        return jsonify({"success": True, "message": msg})
     except Exception as e:
         print(f"Signup Error: {e}")
         return jsonify({"success": False, "message": str(e)})
@@ -45,7 +75,7 @@ def login():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
-        "SELECT id, username, role, name FROM users WHERE email=%s AND password=%s",
+        "SELECT id, username, role, name, is_approved FROM users WHERE email=%s AND password=%s",
         (email, password)
     )
 
@@ -55,6 +85,13 @@ def login():
     db.close()
 
     if user:
+        # Check approval for delivery/hotel roles
+        if user['role'] in ['delivery', 'hotel'] and not user.get('is_approved'):
+            return jsonify({
+                "success": False,
+                "message": f"Your {user['role']} account is pending admin approval. Please wait for verification."
+            }), 403
+
         return jsonify({
             "success": True,
             "message": "Login successful",
@@ -80,29 +117,22 @@ def google_auth():
 
     try:
         if firebase_auth:
-            # Verify the Firebase Token
             from firebase_admin import auth as firebase_auth_admin
             try:
                 decoded_token = firebase_auth_admin.verify_id_token(token)
                 uid = decoded_token.get("uid")
                 email = decoded_token.get("email")
                 name = decoded_token.get("name")
-                print(f"DEBUG: Token UID: {uid}, Email: {email}, Name: {name}", flush=True)
                 
-                # If email is missing in token, fetch from Firebase user record
                 if not email and uid:
                     user_record = firebase_auth_admin.get_user(uid)
-                    print(f"DEBUG: Fetched UserRecord: {vars(user_record)}", flush=True)
                     email = user_record.email
                     name = name or user_record.display_name
-                    print(f"DEBUG: Fetched Record Email: {email}, Name: {name}", flush=True)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                print(f"Firebase Token Verification Failed: {e}")
                 return jsonify({"success": False, "message": f"Firebase Verification Failed: {str(e)}"}), 401
         else:
-            # Standard Google Verify
             google_res = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={token}")
             google_data = google_res.json()
             if "error" in google_data:
@@ -113,7 +143,6 @@ def google_auth():
         if not email:
             return jsonify({"success": False, "message": "Email not found"}), 400
 
-        # Check if user exists
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
@@ -121,11 +150,10 @@ def google_auth():
         user = cursor.fetchone()
 
         if user:
-            # Login existing user - ensure they are a regular 'user'
             if user['role'] != 'user':
                 return jsonify({
                     "success": False, 
-                    "message": f"This Google account is linked to a {user['role']} profile. Please use email and password to access the specialized dashboard."
+                    "message": f"This Google account is linked to a {user['role']} profile. Please use email and password."
                 }), 403
 
             if not user['name'] and name:
@@ -143,17 +171,22 @@ def google_auth():
                 }
             })
         else:
-            # Register new user
             username = email.split("@")[0]
             password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
             role = "user"
 
             cursor.execute(
-                "INSERT INTO users (username, email, password, role, name) VALUES (%s,%s,%s,%s,%s)",
-                (username, email, password, role, name)
+                "INSERT INTO users (username, email, password, role, name, is_approved) VALUES (%s,%s,%s,%s,%s,%s)",
+                (username, email, password, role, name, True)
             )
             db.commit()
             user_id = cursor.lastrowid
+
+            # Send registration email for Google signups too
+            try:
+                send_registration_email(email, name or username, role)
+            except Exception:
+                pass
 
             return jsonify({
                 "success": True,
@@ -170,7 +203,7 @@ def google_auth():
         print(f"Auth Error: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
-# ---------------- PASSWORD RESET (MOCK) ----------------
+# ---------------- PASSWORD RESET ----------------
 @auth_bp.route("/reset-password", methods=["POST"])
 def reset_password():
     data = request.json
@@ -184,14 +217,12 @@ def reset_password():
     cursor = db.cursor()
 
     try:
-        # Check if user exists
         cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
         if not user:
             return jsonify({"success": False, "message": "User not found"}), 404
 
-        # Update password
         cursor.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, email))
         db.commit()
 

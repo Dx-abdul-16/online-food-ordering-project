@@ -1,6 +1,7 @@
 
 from flask import Blueprint, jsonify, request
 from db import get_db
+from email_service import send_approval_email
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -10,27 +11,31 @@ def get_stats():
     db = get_db()
     cursor = db.cursor(dictionary=True)
     try:
-        # 1. Total Revenue (Sum of all orders)
         cursor.execute("SELECT SUM(total_amount) as revenue FROM orders")
         rev = cursor.fetchone()['revenue'] or 0
         
-        # 2. Total Orders
         cursor.execute("SELECT COUNT(*) as count FROM orders")
         orders = cursor.fetchone()['count']
         
-        # 3. Total Users
         cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'user'")
         users = cursor.fetchone()['count']
         
-        # 4. Total Restaurants
         cursor.execute("SELECT COUNT(*) as count FROM restaurants")
         restaurants = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'delivery'")
+        delivery_partners = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE role = 'delivery' AND is_online = TRUE")
+        online_partners = cursor.fetchone()['count']
         
         return jsonify({
             "revenue": float(rev),
             "orders": orders,
             "users": users,
-            "restaurants": restaurants
+            "restaurants": restaurants,
+            "delivery_partners": delivery_partners,
+            "online_partners": online_partners
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -68,13 +73,19 @@ def get_all_orders():
 def get_partners():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    # Fetch where role is 'delivery'
-    cursor.execute("SELECT id, name, email, phone, is_approved FROM users WHERE role = 'delivery'")
+    cursor.execute("""
+        SELECT id, name, email, phone, is_approved, driving_license, 
+               driving_license_image, is_online, live_latitude, live_longitude,
+               last_location_update
+        FROM users WHERE role = 'delivery'
+    """)
     partners = cursor.fetchall()
     
-    # Format boolean for JSON
     for p in partners:
-        p['is_approved'] = bool(p['is_approved'])
+        p['is_approved'] = bool(p.get('is_approved'))
+        p['is_online'] = bool(p.get('is_online'))
+        if p.get('last_location_update'):
+            p['last_location_update'] = str(p['last_location_update'])
 
     cursor.close()
     db.close()
@@ -83,11 +94,23 @@ def get_partners():
 @admin_bp.route("/approve-partner/<int:id>", methods=["POST"])
 def approve_partner(id):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     try:
+        # Get partner details for email
+        cursor.execute("SELECT email, name, role FROM users WHERE id = %s", (id,))
+        partner = cursor.fetchone()
+        
         cursor.execute("UPDATE users SET is_approved = TRUE WHERE id = %s", (id,))
         db.commit()
-        return jsonify({"success": True, "message": "Partner approved"})
+
+        # Send approval email
+        if partner:
+            try:
+                send_approval_email(partner['email'], partner['name'], partner['role'], approved=True)
+            except Exception as e:
+                print(f"Approval email failed: {e}")
+
+        return jsonify({"success": True, "message": "Partner approved. Email notification sent."})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -97,11 +120,53 @@ def approve_partner(id):
 @admin_bp.route("/deny-partner/<int:id>", methods=["DELETE"])
 def deny_partner(id):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     try:
+        # Get partner details for email before deletion
+        cursor.execute("SELECT email, name, role FROM users WHERE id = %s", (id,))
+        partner = cursor.fetchone()
+
         cursor.execute("DELETE FROM users WHERE id = %s", (id,))
         db.commit()
-        return jsonify({"success": True, "message": "Partner denied/removed"})
+
+        # Send denial email
+        if partner:
+            try:
+                send_approval_email(partner['email'], partner['name'], partner['role'], approved=False)
+            except Exception as e:
+                print(f"Denial email failed: {e}")
+
+        return jsonify({"success": True, "message": "Partner denied/removed. Email notification sent."})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        db.close()
+
+# --- LIVE TRACKING: All delivery partners ---
+@admin_bp.route("/live-tracking", methods=["GET"])
+def get_live_tracking():
+    """Get all delivery partner live locations for admin map"""
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT id, name, email, phone, is_approved, is_online,
+                   live_latitude, live_longitude, last_location_update
+            FROM users 
+            WHERE role = 'delivery' 
+              AND live_latitude IS NOT NULL 
+              AND live_longitude IS NOT NULL
+            ORDER BY is_online DESC, last_location_update DESC
+        """)
+        partners = cursor.fetchall()
+        for p in partners:
+            p['is_approved'] = bool(p.get('is_approved'))
+            p['is_online'] = bool(p.get('is_online'))
+            if p.get('last_location_update'):
+                p['last_location_update'] = str(p['last_location_update'])
+
+        return jsonify({"success": True, "partners": partners})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -136,7 +201,6 @@ def delete_restaurant(id):
 @admin_bp.route("/restaurant/add", methods=["POST"])
 def add_restaurant():
     data = request.json
-    # Basic adding logic (Admin adding manually)
     name = data.get("name")
     cuisine = data.get("cuisine")
     location = data.get("location")

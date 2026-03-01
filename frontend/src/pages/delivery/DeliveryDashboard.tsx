@@ -6,13 +6,16 @@ import {
   Bike, MapPin, CheckCircle2, Navigation, 
   Package, Clock, Wallet, TrendingUp,
   LogOut, Shield, ChevronRight, Loader2,
-  Calendar
+  Calendar, XCircle, Camera, QrCode, Power,
+  PowerOff, Scan
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/Header";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import MapView from "@/components/MapView";
+import QRScanner from "@/components/QRScanner";
+import QRCodeDisplay from "@/components/QRCodeDisplay";
 
 const DeliveryDashboard = () => {
     const navigate = useNavigate();
@@ -22,11 +25,29 @@ const DeliveryDashboard = () => {
     const [driverLoc, setDriverLoc] = useState<{ lat: number; lng: number } | null>(null);
     const [watchId, setWatchId] = useState<number | null>(null);
     const [statusUpdating, setStatusUpdating] = useState(false);
+    const [isOnline, setIsOnline] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
+    const [activeQrHash, setActiveQrHash] = useState<string | null>(null);
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
     useEffect(() => {
         fetchOrders();
-        const timer = setInterval(fetchOrders, 10000); // refresh every 10s
+        const timer = setInterval(fetchOrders, 10000);
         return () => clearInterval(timer);
+    }, []);
+
+    // Get initial location on mount
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setDriverLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                },
+                () => {},
+                { enableHighAccuracy: true }
+            );
+        }
     }, []);
 
     const fetchOrders = async () => {
@@ -42,20 +63,37 @@ const DeliveryDashboard = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        navigate('/login');
+    const handleGoOnline = async () => {
+        if (!driverLoc) {
+            toast.error("Cannot get your location. Please enable GPS.");
+            return;
+        }
+        try {
+            await api.post("/delivery/go-online", {
+                partnerId: user.id,
+                latitude: driverLoc.lat,
+                longitude: driverLoc.lng
+            });
+            setIsOnline(true);
+            toast.success("You are now ONLINE! Ready for deliveries.");
+            startContinuousTracking();
+        } catch (e) {
+            toast.error("Failed to go online");
+        }
     };
 
-    const startTracking = (order: any) => {
-        setActiveOrder(order);
-        toast.success("Assignment accepted! Live GPS tracking started.");
-        
-        // Auto-update status to 'on_the_way' if it wasn't already
-        if (order.status !== "on_the_way") {
-            updateOrderStatus(order.id, "on_the_way");
+    const handleGoOffline = async () => {
+        try {
+            await api.post("/delivery/go-offline", { partnerId: user.id });
+            setIsOnline(false);
+            stopTracking();
+            toast.info("You are now OFFLINE.");
+        } catch (e) {
+            toast.error("Failed to go offline");
         }
+    };
 
+    const startContinuousTracking = () => {
         if (navigator.geolocation) {
             const id = navigator.geolocation.watchPosition(
                 async (position) => {
@@ -63,10 +101,10 @@ const DeliveryDashboard = () => {
                     const lng = position.coords.longitude;
                     setDriverLoc({ lat, lng });
 
-                    // Send to backend API
                     try {
                         await api.post("/delivery/location/update", {
-                            orderId: order.id,
+                            partnerId: user.id,
+                            orderId: activeOrder?.id || null,
                             latitude: lat,
                             longitude: lng,
                         });
@@ -75,14 +113,55 @@ const DeliveryDashboard = () => {
                     }
                 },
                 (error) => {
-                    toast.error("Could not get your location. Please check browser permissions.");
-                    console.error(error);
+                    console.error("Location error:", error);
                 },
-                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
             );
             setWatchId(id);
-        } else {
-            toast.error("Geolocation is not supported by your browser");
+        }
+    };
+
+    const handleLogout = async () => {
+        if (isOnline) {
+            await handleGoOffline();
+        }
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
+
+    const acceptOrder = async (order: any) => {
+        try {
+            const res = await api.post("/delivery/accept-order", {
+                orderId: order.id,
+                partnerId: user.id
+            });
+            if (res.success) {
+                setActiveOrder({ ...order, status: "on_the_way" });
+                setActiveQrHash(res.qrHash);
+                toast.success("Order accepted! QR code generated for pickup.");
+                
+                if (!watchId) {
+                    startContinuousTracking();
+                }
+                fetchOrders();
+            } else {
+                toast.error(res.message || "Failed to accept order");
+            }
+        } catch (e: any) {
+            toast.error(e.message || "Failed to accept order");
+        }
+    };
+
+    const declineOrder = async (order: any) => {
+        try {
+            await api.post("/delivery/decline-order", {
+                orderId: order.id,
+                partnerId: user.id
+            });
+            toast.info("Order declined.");
+            setOrders(orders.filter(o => o.id !== order.id));
+        } catch (e) {
+            toast.error("Failed to decline");
         }
     };
 
@@ -92,7 +171,7 @@ const DeliveryDashboard = () => {
             setWatchId(null);
         }
         setActiveOrder(null);
-        setDriverLoc(null);
+        setActiveQrHash(null);
     };
 
     const updateOrderStatus = async (orderId: number, status: string) => {
@@ -118,6 +197,29 @@ const DeliveryDashboard = () => {
         }
     };
 
+    const handleQRScan = async (code: string) => {
+        setShowScanner(false);
+        toast.info(`Verifying code: ${code}...`);
+        
+        if (activeOrder) {
+            try {
+                const res = await api.post("/delivery/verify-pickup", {
+                    orderId: activeOrder.id,
+                    qrHash: code,
+                    partnerId: user.id
+                });
+                if (res.success) {
+                    toast.success("✅ Pickup verified! Navigate to customer now.");
+                    setActiveOrder({ ...activeOrder, status: "on_the_way" });
+                } else {
+                    toast.error(res.message || "Verification failed");
+                }
+            } catch (e: any) {
+                toast.error(e.message || "Verification failed");
+            }
+        }
+    };
+
     if (loading && !orders.length) return (
       <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-[#c9a84c]" />
@@ -128,6 +230,14 @@ const DeliveryDashboard = () => {
         <div className="min-h-screen bg-[#0d0d0d] pb-20 text-white font-sans">
             <Header />
             
+            {/* QR Scanner Modal */}
+            {showScanner && (
+                <QRScanner 
+                    onScan={handleQRScan}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
+
             <div className="container py-8">
               {/* Header */}
               <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -136,11 +246,26 @@ const DeliveryDashboard = () => {
                         <Bike className="h-6 w-6 text-[#c9a84c]" />
                         <h1 className="text-3xl font-black tracking-tighter uppercase italic">Delivery Fleet</h1>
                       </div>
-                      <p className="text-gray-500 font-medium tracking-tight">Status: <span className="text-green-500 font-black tracking-widest text-[10px]">● ONLINE & READY</span></p>
+                      <p className="text-gray-500 font-medium tracking-tight">
+                        Status: {isOnline ? (
+                          <span className="text-green-500 font-black tracking-widest text-[10px]">● ONLINE & READY</span>
+                        ) : (
+                          <span className="text-red-500 font-black tracking-widest text-[10px]">● OFFLINE</span>
+                        )}
+                      </p>
                   </div>
                   <div className="flex gap-2">
+                      {!isOnline ? (
+                          <Button onClick={handleGoOnline} className="bg-green-500 hover:bg-green-600 text-white rounded-xl h-11 px-6 font-bold flex gap-2">
+                              <Power className="h-4 w-4" /> GO ONLINE
+                          </Button>
+                      ) : (
+                          <Button onClick={handleGoOffline} variant="outline" className="border-orange-500/30 text-orange-500 hover:bg-orange-500/10 rounded-xl h-11 px-6 font-bold flex gap-2">
+                              <PowerOff className="h-4 w-4" /> GO OFFLINE
+                          </Button>
+                      )}
                       <Button onClick={handleLogout} variant="destructive" className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-xl h-11 px-6 font-bold flex gap-2">
-                          <LogOut className="h-4 w-4" /> Go Offline
+                          <LogOut className="h-4 w-4" /> Logout
                       </Button>
                   </div>
               </div>
@@ -176,59 +301,83 @@ const DeliveryDashboard = () => {
                           <>
                               <h2 className="text-2xl font-black flex items-center gap-3 tracking-tighter">
                                 <Navigation className="h-6 w-6 text-[#c9a84c] animate-pulse" /> 
-                                LISTED ASSIGNMENTS ({orders.length})
+                                NEARBY ORDERS ({orders.length})
                               </h2>
                               
-                              {orders.length === 0 ? (
-                                  <div className="p-10 border border-[#2a2a2a] rounded-3xl text-center text-gray-500 bg-[#111] animate-pulse">
-                                      No orders pending at the moment.
+                              {!isOnline && (
+                                  <div className="p-6 border border-orange-500/30 rounded-3xl text-center bg-orange-500/5">
+                                      <PowerOff className="h-10 w-10 text-orange-500 mx-auto mb-3" />
+                                      <p className="text-orange-500 font-bold">You are currently OFFLINE</p>
+                                      <p className="text-gray-500 text-sm mt-1">Go online to start receiving orders</p>
+                                      <Button onClick={handleGoOnline} className="mt-4 bg-green-500 hover:bg-green-600 text-white rounded-xl h-11 px-8 font-bold">
+                                          <Power className="h-4 w-4 mr-2" /> GO ONLINE NOW
+                                      </Button>
                                   </div>
-                              ) : (
-                                  orders.map((order) => (
-                                      <Card key={order.id} className="bg-[#111111] border-2 border-dashed border-[#c9a84c]/30 rounded-3xl overflow-hidden mb-6">
-                                        <CardHeader className="p-6 border-b border-[#1e1e1e] bg-[#c9a84c]/5">
-                                          <div className="flex justify-between items-center mb-4">
-                                            <Badge className="bg-[#c9a84c] text-black font-black text-[10px] px-3 rounded-lg">ORDER #{order.id}</Badge>
-                                            <span className="text-[11px] font-black text-white uppercase tracking-widest">{order.status}</span>
-                                          </div>
-                                          <CardTitle className="text-2xl font-black tracking-tighter">{order.restaurant_name} → Delivery</CardTitle>
-                                          <CardDescription className="text-gray-400 font-medium">Placed at: {new Date(order.created_at).toLocaleString()}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="p-8">
-                                            <div className="flex flex-col gap-6 mb-8 relative">
-                                               {/* Timeline dots */}
-                                               <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-[#c9a84c] to-blue-500"></div>
-                                               
-                                               <div className="flex gap-4 relative">
-                                                  <div className="h-4 w-4 rounded-full bg-[#c9a84c] shadow-[0_0_10px_#c9a84c] z-10 shrink-0 mt-1"></div>
-                                                  <div>
-                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">PICKUP STORE</p>
-                                                    <p className="text-lg font-bold text-white leading-tight">{order.restaurant_name}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{order.restaurant_address}</p>
-                                                  </div>
-                                               </div>
-
-                                               <div className="flex gap-4 relative">
-                                                  <div className="h-4 w-4 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] z-10 shrink-0 mt-1"></div>
-                                                  <div>
-                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">DELIVERY POINT</p>
-                                                    <p className="text-lg font-bold text-white leading-tight">{order.delivery_address || `Lat: ${order.user_lat}, Lng: ${order.user_lng}`}</p>
-                                                  </div>
-                                               </div>
-                                            </div>
-
-                                            <div className="flex gap-3">
-                                              <Button 
-                                                  className="flex-1 bg-[#c9a84c] text-black hover:bg-[#b8943d] rounded-2xl h-14 font-black shadow-xl shadow-[#c9a84c]/10"
-                                                  onClick={() => startTracking(order)}
-                                              >
-                                                ACCEPT & START GPS
-                                              </Button>
-                                            </div>
-                                        </CardContent>
-                                      </Card>
-                                  ))
                               )}
+
+                              {isOnline && orders.length === 0 && (
+                                  <div className="p-10 border border-[#2a2a2a] rounded-3xl text-center text-gray-500 bg-[#111] animate-pulse">
+                                      No orders pending at the moment. Waiting...
+                                  </div>
+                              )}
+
+                              {isOnline && orders.map((order) => (
+                                  <Card key={order.id} className="bg-[#111111] border-2 border-dashed border-[#c9a84c]/30 rounded-3xl overflow-hidden mb-6">
+                                    <CardHeader className="p-6 border-b border-[#1e1e1e] bg-[#c9a84c]/5">
+                                      <div className="flex justify-between items-center mb-4">
+                                        <Badge className="bg-[#c9a84c] text-black font-black text-[10px] px-3 rounded-lg">ORDER #{order.id}</Badge>
+                                        <span className="text-[11px] font-black text-white uppercase tracking-widest">{order.status}</span>
+                                      </div>
+                                      <CardTitle className="text-2xl font-black tracking-tighter">{order.restaurant_name} → Delivery</CardTitle>
+                                      <CardDescription className="text-gray-400 font-medium">
+                                        Placed at: {new Date(order.created_at).toLocaleString()} | ₹{order.total_amount}
+                                      </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="p-8">
+                                        <div className="flex flex-col gap-6 mb-8 relative">
+                                           {/* Timeline dots */}
+                                           <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-[#c9a84c] to-blue-500"></div>
+                                           
+                                           <div className="flex gap-4 relative">
+                                              <div className="h-4 w-4 rounded-full bg-[#c9a84c] shadow-[0_0_10px_#c9a84c] z-10 shrink-0 mt-1"></div>
+                                              <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">PICKUP STORE</p>
+                                                <p className="text-lg font-bold text-white leading-tight">{order.restaurant_name}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{order.restaurant_address}</p>
+                                              </div>
+                                           </div>
+
+                                           <div className="flex gap-4 relative">
+                                              <div className="h-4 w-4 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6] z-10 shrink-0 mt-1"></div>
+                                              <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">DELIVERY POINT</p>
+                                                <p className="text-lg font-bold text-white leading-tight">{order.delivery_address || `Lat: ${order.user_lat}, Lng: ${order.user_lng}`}</p>
+                                              </div>
+                                           </div>
+                                        </div>
+
+                                        {/* Accept / Decline buttons */}
+                                        <div className="flex gap-3">
+                                          <Button 
+                                              className="flex-1 bg-[#c9a84c] text-black hover:bg-[#b8943d] rounded-2xl h-14 font-black shadow-xl shadow-[#c9a84c]/10"
+                                              onClick={() => acceptOrder(order)}
+                                              disabled={!!order.delivery_partner_id && order.delivery_partner_id !== user.id}
+                                          >
+                                            <CheckCircle2 className="h-5 w-5 mr-2" />
+                                            ACCEPT ORDER
+                                          </Button>
+                                          <Button 
+                                              variant="destructive"
+                                              className="rounded-2xl h-14 px-6 font-bold bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20"
+                                              onClick={() => declineOrder(order)}
+                                          >
+                                            <XCircle className="h-5 w-5 mr-2" />
+                                            DECLINE
+                                          </Button>
+                                        </div>
+                                    </CardContent>
+                                  </Card>
+                              ))}
                           </>
                       ) : (
                           <>
@@ -240,7 +389,7 @@ const DeliveryDashboard = () => {
                               <Card className="bg-[#111111] border-2 border-[#2a2a2a] rounded-3xl overflow-hidden mb-6">
                                   <CardHeader className="p-4 border-b border-[#1e1e1e] bg-[#0d0d0d]">
                                       <CardTitle className="text-lg font-bold flex justify-between items-center">
-                                          <span>Live Area Tracking</span>
+                                          <span>Live GPS Tracking</span>
                                           {driverLoc ? (
                                              <Badge className="bg-green-500 text-white animate-pulse">GPS ACTIVE</Badge>
                                           ) : (
@@ -264,6 +413,26 @@ const DeliveryDashboard = () => {
                                           />
                                       </div>
                                   </CardContent>
+
+                                  {/* QR Code for this order */}
+                                  {activeQrHash && (
+                                      <div className="p-6 border-b border-[#1e1e1e] bg-[#0a0a0a]">
+                                          <div className="flex flex-col sm:flex-row items-center gap-6">
+                                              <QRCodeDisplay value={activeQrHash} size={140} label="Order Pickup QR" />
+                                              <div className="text-center sm:text-left">
+                                                  <p className="text-sm font-bold text-white mb-2">📱 Show this QR at restaurant</p>
+                                                  <p className="text-xs text-gray-500 mb-4">The restaurant will scan this to verify your pickup</p>
+                                                  <Button
+                                                      onClick={() => setShowScanner(true)}
+                                                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl h-11 px-6 font-bold flex gap-2"
+                                                  >
+                                                      <Scan className="h-4 w-4" /> SCAN QR TO VERIFY
+                                                  </Button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  )}
+
                                   <div className="p-4 bg-[#0d0d0d]">
                                      <div className="flex flex-col sm:flex-row gap-4">
                                           {['pending', 'preparing', 'on_the_way'].includes(activeOrder.status) && (
@@ -291,8 +460,29 @@ const DeliveryDashboard = () => {
                       )}
                   </div>
 
-                  {/* Sidebar - Performance */}
+                  {/* Sidebar - Performance + Location */}
                   <div className="space-y-6">
+                      {/* My Location Card */}
+                      {driverLoc && (
+                          <Card className="bg-[#111111] border-[#2a2a2a] rounded-3xl overflow-hidden">
+                              <CardContent className="p-6">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-3">YOUR LIVE LOCATION</p>
+                                  <div className="w-full h-[200px] rounded-2xl overflow-hidden border border-[#2a2a2a]">
+                                      <MapView
+                                          center={[driverLoc.lat, driverLoc.lng]}
+                                          zoom={15}
+                                          height="100%"
+                                          width="100%"
+                                          popupText="You are here"
+                                      />
+                                  </div>
+                                  <div className="mt-3 text-xs text-gray-500 font-mono">
+                                      {driverLoc.lat.toFixed(6)}, {driverLoc.lng.toFixed(6)}
+                                  </div>
+                              </CardContent>
+                          </Card>
+                      )}
+
                       <h2 className="text-2xl font-black tracking-tighter">PERFORMANCE</h2>
                       <Card className="bg-[#111111] border-[#2a2a2a] rounded-3xl overflow-hidden">
                         <CardContent className="p-6">
