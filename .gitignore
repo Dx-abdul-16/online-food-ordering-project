@@ -3,7 +3,10 @@ node_modules/
 __pycache__/
 *.env
 .env
+!.env.production
 dist/
 .DS_Store
 backend/firebase-service-account.json
 **/firebase-service-account.json
+
+apphosting.local.yaml
