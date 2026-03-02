@@ -7,11 +7,23 @@
  */
 
 // Dynamic API URL depending on the environment
-export const API_BASE_URL =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1"
-    ? "http://localhost:5000/api"
-    : "https://online-food-ordering-project-production.up.railway.app/api";
+const hostname = window.location.hostname;
+const isLocal = hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.") || hostname.startsWith("172.");
+
+const getBaseUrl = () => {
+  if (isLocal) return "/api";
+  const url = import.meta.env.VITE_API_BASE_URL || "https://online-food-ordering-project-production.up.railway.app/api";
+  return url.replace("http://", "https://");
+};
+
+const getHostUrl = () => {
+  if (isLocal) return "";
+  const url = import.meta.env.VITE_BACKEND_HOST || "https://online-food-ordering-project-production.up.railway.app";
+  return url.replace("http://", "https://");
+};
+
+export const API_BASE_URL = getBaseUrl();
+export const API_HOST_URL = getHostUrl();
 
 export const api = {
   get: async (endpoint: string) => {

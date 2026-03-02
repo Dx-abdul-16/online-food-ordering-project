@@ -12,7 +12,7 @@ import {
   ChevronRight, Upload, Pencil
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/lib/api";
+import { api, API_HOST_URL } from "@/lib/api";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -90,7 +90,7 @@ const RestaurantDashboard = () => {
             formData.append('image', file);
             const res = await api.upload('/uploads/image', formData);
             if (res.success && res.url) {
-                const fullUrl = `https://online-food-ordering-project-production.up.railway.app${res.url}`;
+                const fullUrl = `${API_HOST_URL}${res.url}`;
                 if (editingItem) {
                     setEditingItem({ ...editingItem, image: fullUrl });
                 } else {

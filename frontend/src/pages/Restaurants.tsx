@@ -122,8 +122,9 @@ const Restaurants = () => {
       try {
         const data = await api.get("/restaurants");
         setRestaurants(Array.isArray(data) ? data : []);
-      } catch {
-        setError("Could not load restaurants. Is the backend running?");
+      } catch (err) {
+        console.error("Fetch restaurants error:", err);
+        setError(`Could not load restaurants: ${(err as Error).message}`);
       } finally {
         setLoading(false);
       }

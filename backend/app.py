@@ -1,11 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from routes.auth import auth_bp
-from routes.admin import admin_bp
-from routes.restaurant import restaurant_bp
-from routes.upload import upload_bp
-from routes.orders import orders_bp
-from routes.delivery import delivery_bp
+from views import admin_bp, auth_bp, delivery_bp, orders_bp, restaurant_bp, upload_bp
 import firebase_admin
 from firebase_admin import credentials
 import os
@@ -25,7 +20,8 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-CORS(app, resources={r"/api/*": {"origins": ["https://food-express-dxac.up.railway.app", "http://localhost:5173", "http://localhost:8080"]}}, supports_credentials=True)
+import re
+CORS(app, resources={r"/api/*": {"origins": re.compile(".*")}}, supports_credentials=True)
 app.register_blueprint(admin_bp,      url_prefix="/api/admin")
 app.register_blueprint(auth_bp,       url_prefix="/api/auth")
 app.register_blueprint(restaurant_bp, url_prefix="/api/restaurants")
