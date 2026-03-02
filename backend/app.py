@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from views import admin_bp, auth_bp, delivery_bp, orders_bp, restaurant_bp, upload_bp
 import firebase_admin
 from firebase_admin import credentials
@@ -19,6 +20,9 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Trust Railway's X-Forwarded-Proto header for HTTPS detection
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 import re
 CORS(app, resources={r"/api/*": {"origins": re.compile(".*")}}, supports_credentials=True)
